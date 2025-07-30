@@ -1,4 +1,26 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+import createNextIntlPlugin from "next-intl/plugin";
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin();
+
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "hafez.share.net.sa",
+        pathname: "/uploads/all/**",
+      },
+    ],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/ar",
+        permanent: false,
+      },
+    ];
+  },
+};
+
+export default withNextIntl(nextConfig);

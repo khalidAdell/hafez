@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
+/* @import url('https://fonts.googleapis.com/css2?family=Almarai&display=swap');
+
+body {
+  font-family: 'Almarai', sans-serif;
+} */
+
+.slick-prev, .slick-next {
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 9999 !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
