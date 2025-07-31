@@ -64,7 +64,6 @@ const Faq = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* FAQ Hero Section */}
         <section className="text-gray-600 mb-20">
           <div className="container mx-auto flex">
             <div className="w-full relative bg-gray-900 py-40 px-10 overflow-hidden">
@@ -93,7 +92,6 @@ const Faq = () => {
           </div>
         </section>
 
-        {/* FAQ Content Section */}
         <section className="pb-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
@@ -106,7 +104,6 @@ const Faq = () => {
             </div>
 
             <div className="md:w-3/4 lg:w-2/3 xl:w-1/2 w-full mx-auto">
-              {/* FAQ List */}
               <div className="space-y-4">
                 {faqs.length > 0 ? (
                   faqs.map((faq, index) => (
@@ -206,7 +203,6 @@ const Faq = () => {
               </div>
             </div>
 
-            {/* Call to Action */}
             <div className="text-center mt-16">
               <div className="bg-white rounded-2xl shadow-lg p-8 max-w-2xl mx-auto">
                 <h3 className="text-2xl font-bold text-gray-800 mb-4">

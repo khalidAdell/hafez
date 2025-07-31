@@ -20,7 +20,7 @@
   "employee_list": "قائمة الموظفين",
   "failed_logins_employees": "تسجيلات الدخول الخاطئة",
   "hafez": "حافظ",
-  "charities": "الجمعيات الخيرية",
+  "charities": "الجمعيات ",
   "mosques": "المساجد",
   "sessions": "الحلقات",
   "timetables": "خطط الطلاب",
@@ -147,7 +147,7 @@
   "city": "المدينة",
   "distinct": "الحى",
   "Permitnumber": "رقم التصريح",
-  "charties": "الجمعيات الخيرية",
+  "charties": "الجمعيات ",
   "mosque-name": "اسم المسجد",
   "responsiblemosque": "المسئول عن المسجد",
   "Mosques": "المساجد",
@@ -344,9 +344,19 @@
     "edit_entity":"تعديل",
     "current_image":"الصورة الحالية",
      "deleted_successfully":"تم الحذف بنجاح ",
-      "added_successfully":"تم الإضافة بنجاح "
+      "added_successfully":"تم الإضافة بنجاح ",
+      "profile_picture":"الصورة الشخصية",
+      "district_updated_successfully":"تم تحديث الحى بنجاح",
 
-
+      "updated_successfully":"تم التحديث بنجاح",
+       "study_level_name_ar": "المرحلة الدراسية بالعربية",
+  "study_level_name_en": "المرحلة الدراسية بالإنجليزية",
+    "status_name_ar":"الاسم بالعربية",
+    "status_name_en":"الاسم بالإنجليزية",
+     "faq_content_ar":"محتوى السؤال بالعربية",
+    "faq_content_en":"محتوى السؤال بالإنجليزية",
+     "faq_name_ar": "اسم السؤال بالعربية",
+  "faq_name_en": "اسم السؤال بالانجليزية"
 
 
 

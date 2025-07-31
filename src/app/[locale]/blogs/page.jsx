@@ -14,12 +14,10 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function BlogsPage({ params }) {
-  const { locale } = await params;
+  const { locale } = params;
 
-  // إنشاء نسخة axios مع تمرير locale
   const axiosInstance = createAxiosInstance(locale);
 
-  // تحميل ملف الترجمة يدويًا
   const messagesPath = path.join(process.cwd(), "messages", `${locale}.json`);
   let messages = {};
   try {
@@ -39,17 +37,13 @@ export default async function BlogsPage({ params }) {
     console.error("Error fetching blogs:", error);
   }
 
-  // دالة للتحقق من الصور (تعيد true مباشرة حاليًا)
-  const validateImage = async (url) => true;
-
-  blogs = (
-    await Promise.all(
-      blogs.map(async (blog) => {
-        const isValidImage = await validateImage(blog.image);
-        return isValidImage ? blog : { ...blog, image: "/about-1.jpg" };
-      })
-    )
-  ).filter(Boolean);
+  blogs = blogs.map((blog) => {
+    const isValidImage = blog.image && blog.image.startsWith("http");
+    return {
+      ...blog,
+      image: isValidImage ? blog.image : "/about-1.jpg",
+    };
+  });
 
   return (
     <div>
@@ -62,15 +56,15 @@ export default async function BlogsPage({ params }) {
 
           <div className="grid md:grid-cols-4 grid-cols-1 md:gap-8 gap-5">
             {blogs.length > 0 ? (
-              blogs.map((blog) => (
-                <div key={blog.id || Math.random()} className="p-4">
+              blogs.map((blog, index) => (
+                <div key={`blog-${blog.id || index}`} className="p-4">
                   <div className="h-full border-2 border-gray-200 rounded-lg overflow-hidden">
                     <Image
                       src={blog.image}
                       width={300}
                       height={200}
                       alt={blog.title || "Blog Image"}
-                      className="lg:h-48 md:h-36 w-full h-32"
+                      className="lg:h-48 md:h-36 w-full h-32 object-cover"
                     />
                     <div className="p-6">
                       <h1 className="text-lg font-medium text-gray-900 mb-3">
@@ -80,7 +74,7 @@ export default async function BlogsPage({ params }) {
                         {(blog.short_description || "بدون وصف").slice(0, 150)}...
                       </p>
                       <Link
-                         href={`/${locale}/blogs/${blog.id || ""}`}
+                        href={`/${locale}/blogs/${blog.id}`}
                         className="inline-flex items-center hover:underline text-[#0B7459]"
                       >
                         {t("blogshow")}

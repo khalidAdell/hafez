@@ -1,17 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import CountUp from "react-countup";
+import React from "react";
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
+
+const CountUp = dynamic(() => import("react-countup"), {
+  ssr: false,
+});
 
 const About = ({ about }) => {
   const t = useTranslations();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   if (!about) return null;
 
@@ -26,33 +25,19 @@ const About = ({ about }) => {
             <div className="grid grid-cols-3 gap-3 text-3xl font-bold text-primary my-10">
               <div>
                 <span className="text-[#0B7459] font-bold text-3xl">
-                  {isClient ? (
-                    <CountUp end={about.counts.teacher} duration={2} />
-                  ) : (
-                    0
-                  )}
+                  <CountUp end={about.counts.teacher} duration={2} />
                 </span>
                 <div className="text-xl text-black">{t("teachersLabel")}</div>
               </div>
               <div>
                 <span className="text-[#0B7459] font-bold text-3xl">
-                  {isClient ? (
-                    <CountUp end={about.counts.student} duration={2} />
-                  ) : (
-                    0
-                  )}
-                  +
+                  <CountUp end={about.counts.student} duration={2} />+
                 </span>
                 <div className="text-xl text-black">{t("studentsLabel")}</div>
               </div>
               <div>
                 <span className="text-[#0B7459] font-bold text-3xl">
-                  {isClient ? (
-                    <CountUp end={about.counts.mosque} duration={2} />
-                  ) : (
-                    0
-                  )}
-                  +
+                  <CountUp end={about.counts.mosque} duration={2} />+
                 </span>
                 <div className="text-xl text-black">{t("mosquesLabel")}</div>
               </div>
@@ -68,7 +53,7 @@ const About = ({ about }) => {
               src="/about-1.jpg"
               width={300}
               height={200}
-              alt={"image about"}
+              alt="image about"
               className="w-full rounded-lg"
               priority
             />
@@ -76,7 +61,7 @@ const About = ({ about }) => {
               src="/about-2.jpg"
               width={300}
               height={200}
-              alt={"image about"}
+              alt="image about"
               className="mt-4 w-full lg:mt-10 rounded-lg"
               priority
             />

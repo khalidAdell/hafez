@@ -24,7 +24,6 @@ export default async function Home({ params }) {
 
   const t = (key) => messages[key] || key;
 
-  // جلب بيانات الصفحة الرئيسية
   const res = await fetch("https://hafez.share.net.sa/api/home", {
     headers: {
       Accept: "application/json",
@@ -35,7 +34,6 @@ export default async function Home({ params }) {
   const result = await res.json();
   const data = result.data;
 
-  // جلب بيانات إعدادات الموقع (بما فيها بيانات الاتصال)
   const configRes = await fetch("https://hafez.share.net.sa/api/website-configuration", {
     cache: "no-store",
   });
@@ -43,7 +41,7 @@ export default async function Home({ params }) {
   const config = configResult.success ? configResult.data : null;
 
   if (!data) {
-    return <div className="text-center py-20">{t("fetch-error")}</div>;
+    return <div className="text-center py-20">{t("error")}</div>;
   }
 
   return (

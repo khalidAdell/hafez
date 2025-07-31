@@ -41,7 +41,6 @@ const UsersPage = () => {
     pagination: 0,
   });
 
-  // تحميل المدن
   useEffect(() => {
     const loadCities = async () => {
       try {
@@ -72,7 +71,6 @@ useEffect(() => {
   loadDistricts();
 }, [filters.city_id, locale]);
 
-  // تحميل المستخدمين على حسب الفلاتر
   useEffect(() => {
     const loadUsers = async () => {
       try {
@@ -87,22 +85,20 @@ useEffect(() => {
     loadUsers();
   }, [filters, locale, t]);
 
-  // إضافة مستخدم جديد
   const handleAddUser = async (userData) => {
     try {
       await addUser(userData, locale);
       setIsAddModalOpen(false);
       const response = await fetchUsers(filters, locale);
       setUsers(response.data);
-      toast.success(t("user_added_successfully"), { autoClose: 3000 });
+      toast.success(t("added_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_adding_user");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
 
-  // تعديل مستخدم
   const handleEditUser = async (userData) => {
     if (!selectedUser?.id) {
       toast.error(t("no_user_selected"), { autoClose: 3000 });
@@ -113,15 +109,14 @@ useEffect(() => {
       setIsEditModalOpen(false);
       const response = await fetchUsers(filters, locale);
       setUsers(response.data);
-      toast.success(t("user_updated_successfully"), { autoClose: 3000 });
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_updating_user");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
 
-  // حذف مستخدم
   const handleDeleteUser = async () => {
     if (!selectedUser?.id) {
       toast.error(t("no_user_selected"), { autoClose: 3000 });
@@ -134,22 +129,19 @@ useEffect(() => {
       setUsers(response.data);
       toast.success(t("user_deleted_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_deleting_user");
+      const errorMessage = err.response?.data?.message || t("error_");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
 
-  // البحث
   const handleSearch = (searchTerm) => {
     setFilters((prev) => ({ ...prev, search: searchTerm }));
   };
 
-  // تطبيق الفلاتر
   const handleFilter = (newFilters) => {
     const updatedFilters = { ...newFilters };
 
-    // نستخدم id وليس الاسم للأماكن
     updatedFilters.city_id = newFilters.city_name || "";
     updatedFilters.district_id = newFilters.district_name || "";
 
@@ -159,7 +151,6 @@ useEffect(() => {
     setFilters((prev) => ({ ...prev, ...updatedFilters }));
   };
 
-  // إعادة تعيين الفلاتر
   const handleResetFilters = () => {
     setFilters({
       type: "",
@@ -175,7 +166,6 @@ useEffect(() => {
     });
   };
 
-  // تكوين خيارات الفلتر مع عرض أسماء المدن والأحياء حسب اللغة
   const filterConfig = [
     {
       name: "type",

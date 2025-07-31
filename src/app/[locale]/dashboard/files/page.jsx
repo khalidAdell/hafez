@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,9 +8,11 @@ import CustomActionFile from "../../../../components/dashboard/CustomActionFile"
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import DeleteModal from "../../../../components/modals/DeleteModal";
-import GenericModal from "../../../../components/modals/GenericModal";
+import GenericFileModal from "../../../../components/modals/GenericFileModal"; 
 import GlobalToast from "../../../../components/GlobalToast";
 import { deleteFile, fetchFiles, uploadFile } from "../../../../lib/api";
+
+const defaultInitialData = {};
 
 const FilesPage = () => {
   const t = useTranslations();
@@ -81,13 +83,11 @@ const FilesPage = () => {
     uploadMutation.mutate(formData);
   };
 
-  // Helper function to check if file is an image
   const isImageFile = (file) => {
     const imageExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
     return file.type === "image" && imageExtensions.includes(file.extension.toLowerCase());
   };
 
-  // إعداد fieldsConfig لـ GenericModal
   const fieldsConfig = [
     {
       name: "file",
@@ -102,12 +102,12 @@ const FilesPage = () => {
       <DashboardHeader
         pageTitle={t("files")}
         backUrl="/dashboard"
-        onAdd={() => setIsAddModalOpen(true)} // استخدام onAdd بدل addUrl
+        onAdd={() => setIsAddModalOpen(true)}
       />
       {isLoading ? (
         <p className="p-4">{t("loading")}</p>
       ) : error ? (
-        <p className="p-4 text-red-600">{t("error_loading_files")}</p>
+        <p className="p-4 text-red-600">{t("error")}</p>
       ) : (
         <div className="p-4 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {files?.map((file) => (
@@ -122,6 +122,7 @@ const FilesPage = () => {
                   className="w-full h-full object-cover"
                   width={500}
                   height={300}
+                  priority 
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -145,11 +146,12 @@ const FilesPage = () => {
         onConfirm={handleConfirmDelete}
         userName={fileToDelete.name}
       />
-      <GenericModal
+      <GenericFileModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddFile}
         fieldsConfig={fieldsConfig}
+        initialData={defaultInitialData} 
         isEdit={false}
       />
       <GlobalToast />

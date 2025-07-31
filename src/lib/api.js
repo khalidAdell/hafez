@@ -70,7 +70,7 @@ export const fetchCities = async (params = {}, locale = "ar") => {
     const axiosInstance = createDashboardAxios(locale);
     const response = await axiosInstance.get("/admin/cities", { params });
     if (response.data.success) {
-      return response.data; 
+      return response.data;
     } else {
       throw new Error(response.data.message || "فشل جلب بيانات المدن");
     }
@@ -80,7 +80,6 @@ export const fetchCities = async (params = {}, locale = "ar") => {
   }
 };
 
-
 export const addCity = async (cityData, locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
@@ -89,10 +88,9 @@ export const addCity = async (cityData, locale = "ar") => {
     formData.append("name_en", cityData.get("name_en") || "");
     formData.append("status", cityData.get("status") || "active");
     if (cityData.get("image")) {
-      formData.append("image", cityData.get("image")); // إرسال image_id تحت اسم image
+      formData.append("image", cityData.get("image"));
     }
 
-    // لوغ للتحقق من البيانات
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
     }
@@ -119,7 +117,7 @@ export const updateCity = async (id, cityData, locale = "ar") => {
     formData.append("name_en", cityData.get("name_en") || "");
     formData.append("status", cityData.get("status") || "active");
     if (cityData.get("image")) {
-      formData.append("image", cityData.get("image")); 
+      formData.append("image", cityData.get("image"));
     }
     formData.append("_method", "PUT");
 
@@ -155,6 +153,7 @@ export const deleteCity = async (cityId, locale = "ar") => {
     throw error;
   }
 };
+
 export const fetchCityById = async (cityId, locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
@@ -173,8 +172,9 @@ export const fetchCityById = async (cityId, locale = "ar") => {
 export const fetchDistricts = async (cityId = "", locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const params = cityId ? { city_id: cityId } : {};
-    const response = await axiosInstance.get("/admin/districts", { params });
+    const response = await axiosInstance.get("/admin/districts", {
+      params: { city_id: cityId },
+    });
     if (response.data.success) {
       return response.data.data.data;
     } else {
@@ -185,6 +185,7 @@ export const fetchDistricts = async (cityId = "", locale = "ar") => {
     throw error;
   }
 };
+
 export const addDistrict = async (districtData, locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
@@ -462,8 +463,6 @@ export const deleteSession = async (sessionId, locale = "ar") => {
   }
 };
 
-
-
 export const fetchFiles = async (params = {}, locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
@@ -509,7 +508,6 @@ export const deleteFile = async (fileId, locale = "ar") => {
   }
 };
 
-
 export const uploadFile = async (formData, locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
@@ -524,6 +522,302 @@ export const uploadFile = async (formData, locale = "ar") => {
     }
   } catch (error) {
     console.error("خطأ في رفع الملف:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const fetchStudyLevels = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/study-levels", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات مستويات الدراسة");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب مستويات الدراسة:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const addStudyLevel = async (studyLevelData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const formData = new FormData();
+    formData.append("name_ar", studyLevelData.get("name_ar") || "");
+    formData.append("name_en", studyLevelData.get("name_en") || "");
+    formData.append("status", studyLevelData.get("status") || "active");
+
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axiosInstance.post("/admin/study-levels", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة مستوى الدراسة");
+    }
+  } catch (error) {
+    console.error("خطأ في إضافة مستوى الدراسة:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateStudyLevel = async ({ id, studyLevelData }, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const formData = new FormData();
+    formData.append("name_ar", studyLevelData.get("name_ar") || "");
+    formData.append("name_en", studyLevelData.get("name_en") || "");
+    formData.append("status", studyLevelData.get("status") || "active");
+    formData.append("_method", "PUT");
+
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axiosInstance.post(`/admin/study-levels/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل مستوى الدراسة");
+    }
+  } catch (error) {
+    console.error("خطأ في تعديل مستوى الدراسة:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteStudyLevel = async (studyLevelId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/study-levels/${studyLevelId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف مستوى الدراسة");
+    }
+  } catch (error) {
+    console.error("خطأ في حذف مستوى الدراسة:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const fetchStudyLevelById = async (studyLevelId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/study-levels/${studyLevelId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات مستوى الدراسة");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب بيانات مستوى الدراسة:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const fetchStatuses = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/statuses", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الحالات");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب الحالات:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const addStatus = async (statusData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const formData = new FormData();
+    formData.append("name_ar", statusData.get("name_ar") || "");
+    formData.append("name_en", statusData.get("name_en") || "");
+    formData.append("status", statusData.get("status") || "active");
+
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axiosInstance.post("/admin/statuses", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة الحالة");
+    }
+  } catch (error) {
+    console.error("خطأ في إضافة الحالة:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateStatus = async ({ id, statusData }, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const formData = new FormData();
+    formData.append("name_ar", statusData.get("name_ar") || "");
+    formData.append("name_en", statusData.get("name_en") || "");
+    formData.append("status", statusData.get("status") || "active");
+    formData.append("_method", "PUT");
+
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axiosInstance.post(`/admin/statuses/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل الحالة");
+    }
+  } catch (error) {
+    console.error("خطأ في تعديل الحالة:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteStatus = async (statusId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/statuses/${statusId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف الحالة");
+    }
+  } catch (error) {
+    console.error("خطأ في حذف الحالة:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const fetchStatusById = async (statusId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/statuses/${statusId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الحالة");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب بيانات الحالة:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const fetchFaqs = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/faqs", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الأسئلة الشائعة");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب الأسئلة الشائعة:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const addFaq = async (faqData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const formData = new FormData();
+    formData.append("name_ar", faqData.get("name_ar") || "");
+    formData.append("name_en", faqData.get("name_en") || "");
+    formData.append("content_ar", faqData.get("content_ar") || "");
+    formData.append("content_en", faqData.get("content_en") || "");
+    formData.append("status", faqData.get("status") || "active");
+
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axiosInstance.post("/admin/faqs", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة السؤال الشائع");
+    }
+  } catch (error) {
+    console.error("خطأ في إضافة السؤال الشائع:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const updateFaq = async ({ id, faqData }, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const formData = new FormData();
+    formData.append("name_ar", faqData.get("name_ar") || "");
+    formData.append("name_en", faqData.get("name_en") || "");
+    formData.append("content_ar", faqData.get("content_ar") || "");
+    formData.append("content_en", faqData.get("content_en") || "");
+    formData.append("status", faqData.get("status") || "active");
+    formData.append("_method", "PUT");
+
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await axiosInstance.post(`/admin/faqs/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل السؤال الشائع");
+    }
+  } catch (error) {
+    console.error("خطأ في تعديل السؤال الشائع:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const deleteFaq = async (faqId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/faqs/${faqId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف السؤال الشائع");
+    }
+  } catch (error) {
+    console.error("خطأ في حذف السؤال الشائع:", error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const fetchFaqById = async (faqId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/faqs/${faqId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات السؤال الشائع");
+    }
+  } catch (error) {
+    console.error("خطأ في جلب بيانات السؤال الشائع:", error.response?.data?.message || error.message);
     throw error;
   }
 };

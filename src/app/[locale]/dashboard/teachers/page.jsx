@@ -109,9 +109,9 @@ const TeachersPage = () => {
       await addUser({ ...teacherData, type: "teacher" }, locale);
       setIsAddModalOpen(false);
       queryClient.invalidateQueries(["teachers"]);
-      toast.success(t("teacher_added_successfully"), { autoClose: 3000 });
+      toast.success(t("added_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_adding_teacher");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -125,9 +125,9 @@ const TeachersPage = () => {
       await updateUser(selectedTeacher.id, { ...teacherData, type: "teacher" }, locale);
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["teachers"]);
-      toast.success(t("teacher_updated_successfully"), { autoClose: 3000 });
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_updating_teacher");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -143,7 +143,7 @@ const TeachersPage = () => {
       queryClient.invalidateQueries(["teachers"]);
       toast.success(t("teacher_deleted_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_deleting_teacher");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };

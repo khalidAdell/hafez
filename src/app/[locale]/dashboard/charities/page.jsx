@@ -36,38 +36,41 @@ const ChartiesPage = () => {
   });
   const [error, setError] = useState(null);
 
-  // جلب المدن
   const { data: cities = [], error: citiesError } = useQuery({
     queryKey: ["cities", locale],
     queryFn: () => {
-      console.log(`Fetching cities for locale: ${locale}`);
-      return fetchCities(locale);
+      return fetchCities({}, locale).then((res) => {
+        if (!res.data?.data) {
+          throw new Error("البيانات المرجعة من fetchCities ليست مصفوفة");
+        }
+        return res.data.data;
+      });
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // جلب الأحياء بناءً على city_id
   const { data: districts = [], error: districtsError } = useQuery({
     queryKey: ["districts", filters.city_id, locale],
     queryFn: () => {
-      console.log(`Fetching districts for city_id: ${filters.city_id}, locale: ${locale}`);
-      return fetchDistricts(filters.city_id, locale);
+      return fetchDistricts(filters.city_id, locale).then((res) => {
+        if (!res.data?.data) {
+          throw new Error("البيانات المرجعة من fetchDistricts ليست مصفوفة");
+        }
+        return res.data.data;
+      });
     },
     enabled: !!filters.city_id,
     staleTime: 5 * 60 * 1000,
   });
 
-  // جلب الجمعيات
   const { data: associations = [], error: associationsError } = useQuery({
     queryKey: ["associations", filters, locale],
     queryFn: () => {
-      console.log(`Fetching associations with filters:`, filters);
       return fetchAssociations(filters, locale).then((res) => res.data.data);
     },
     staleTime: 1 * 60 * 1000,
   });
 
-  // إدارة الأخطاء
   useEffect(() => {
     if (citiesError || districtsError || associationsError) {
       const errorMessage =
@@ -82,52 +85,71 @@ const ChartiesPage = () => {
     }
   }, [citiesError, districtsError, associationsError, t]);
 
-  // إضافة جمعية
   const addAssociationMutation = useMutation({
-    mutationFn: (associationData) => addAssociation(associationData, locale),
+    mutationFn: (associationData) => {
+      const formData = new FormData();
+      formData.append("name_ar", associationData.name_ar || "");
+      formData.append("name_en", associationData.name_en || "");
+      formData.append("auth_image", associationData.auth_image_id || "");
+      formData.append("auth_number", associationData.auth_number || "");
+      formData.append("status", associationData.status || "active");
+      formData.append("logo", associationData.logo_id || "");
+      formData.append("city_id", associationData.city_id || "");
+      formData.append("district_id", associationData.district_id || "");
+      return addAssociation(formData, locale);
+    },
     onSuccess: () => {
       setIsAddModalOpen(false);
       queryClient.invalidateQueries(["associations", filters, locale]);
-      toast.success(t("association_added_successfully"), { autoClose: 3000 });
+      toast.success(t("added_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_adding_association");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
   });
 
-  // تعديل جمعية
   const updateAssociationMutation = useMutation({
-    mutationFn: ({ id, associationData }) => updateAssociation(id, associationData, locale),
+    mutationFn: ({ id, associationData }) => {
+      const formData = new FormData();
+      formData.append("name_ar", associationData.name_ar || "");
+      formData.append("name_en", associationData.name_en || "");
+      formData.append("auth_image", associationData.auth_image_id || "");
+      formData.append("auth_number", associationData.auth_number || "");
+      formData.append("status", associationData.status || "active");
+      formData.append("logo", associationData.logo_id || "");
+      formData.append("city_id", associationData.city_id || "");
+      formData.append("district_id", associationData.district_id || "");
+      formData.append("_method", "PUT");
+      return updateAssociation(id, formData, locale);
+    },
     onSuccess: () => {
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["associations", filters, locale]);
-      toast.success(t("association_updated_successfully"), { autoClose: 3000 });
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_updating_association");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
   });
 
-  // حذف جمعية
   const deleteAssociationMutation = useMutation({
     mutationFn: (id) => deleteAssociation(id, locale),
     onSuccess: () => {
       setIsDeleteModalOpen(false);
       queryClient.invalidateQueries(["associations", filters, locale]);
-      toast.success(t("association_deleted_successfully"), { autoClose: 3000 });
+      toast.success(t("deleted_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_deleting_association");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
   });
 
-  // التعامل مع السيرش
   const handleSearch = useCallback(
     debounce((searchTerm) => {
       setFilters((prev) => ({ ...prev, search: searchTerm }));
@@ -135,10 +157,8 @@ const ChartiesPage = () => {
     []
   );
 
-  // التعامل مع الفلاتر
   const handleFilter = useCallback(
     debounce((newFilters) => {
-      console.log("Applying filters:", newFilters);
       const updatedFilters = { ...newFilters };
       if (newFilters.city_name) {
         const selectedCity = cities.find((city) => city.name === newFilters.city_name);
@@ -159,9 +179,7 @@ const ChartiesPage = () => {
     [cities, districts]
   );
 
-  // إعادة ضبط الفلاتر
   const handleResetFilters = useCallback(() => {
-    console.log("Resetting filters");
     setFilters({
       status: "active",
       search: "",
@@ -174,7 +192,6 @@ const ChartiesPage = () => {
     });
   }, []);
 
-  // إعدادات الفلاتر
   const filterConfig = useMemo(
     () => [
       {
@@ -190,13 +207,13 @@ const ChartiesPage = () => {
         name: "city_name",
         label: "city",
         type: "select",
-        options: cities.map((city) => ({ value: city.name, label: city.name })),
+        options: Array.isArray(cities) ? cities.map((city) => ({ value: city.name, label: city.name })) : [],
       },
       {
         name: "district_name",
         label: "district",
         type: "select",
-        options: districts.map((district) => ({ value: district.name, label: district.name })),
+        options: Array.isArray(districts) ? districts.map((district) => ({ value: district.name, label: district.name })) : [],
       },
       {
         name: "pagination",
@@ -208,44 +225,54 @@ const ChartiesPage = () => {
     [cities, districts]
   );
 
-  // إعدادات الحقول للإضافة والتعديل
-  const fieldsConfig = useMemo(
-    () => [
-      { name: "name_ar", label: "name_ar", type: "text", required: true },
-      { name: "name_en", label: "name_en", type: "text", required: true },
-      { name: "auth_image", label: "auth_image", type: "text", required: true },
-      { name: "auth_number", label: "auth_number", type: "text", required: true },
-      {
-        name: "status",
-        label: "status",
-        type: "select",
-        options: [
-          { value: "active", label: "active" },
-          { value: "inactive", label: "inactive" },
-        ],
-      },
-      { name: "logo", label: "logo", type: "text", required: true },
-      {
-        name: "city_id",
-        label: "city",
-        type: "select",
-        options: cities.map((city) => ({ value: city.id, label: city.name })),
-      },
-      {
-        name: "district_id",
-        label: "district",
-        type: "select",
-        dependsOn: "city_id",
-        options: districts.map((district) => ({ value: district.id, label: district.name })),
-      },
-    ],
-    [cities, districts]
-  );
 
-  // إعدادات السيرش
+const fieldsConfig = useMemo(
+  () => [
+    { name: "name_ar", label: "name_ar", type: "text", required: true },
+    { name: "name_en", label: "name_en", type: "text", required: true },
+    {
+      name: "auth_image_id",
+      label: "auth_image",
+      type: "image-picker",
+      required: true,
+      imageField: "auth_image", 
+    },
+    { name: "auth_number", label: "auth_number", type: "text", required: true },
+    {
+      name: "status",
+      label: "status",
+      type: "select",
+      options: [
+        { value: "active", label: "active" },
+        { value: "inactive", label: "inactive" },
+      ],
+    },
+    {
+      name: "logo_id",
+      label: "logo",
+      type: "image-picker",
+      required: true,
+      imageField: "logo", 
+    },
+    {
+      name: "city_id",
+      label: "city",
+      type: "select",
+      options: Array.isArray(cities) ? cities.map((city) => ({ value: city.id, label: city.name })) : [],
+    },
+    {
+      name: "district_id",
+      label: "district",
+      type: "select",
+      dependsOn: "city_id",
+      options: [],
+    },
+  ],
+  [cities]
+);
+
   const searchConfig = { field: "search", placeholder: "search_associations" };
 
-  // إعدادات الأعمدة للجدول
   const columns = useMemo(
     () => [
       { header: t("id"), accessor: "id" },
@@ -253,12 +280,12 @@ const ChartiesPage = () => {
       {
         header: t("city"),
         accessor: "city_id",
-        render: (row) => cities.find((city) => city.id === row.city_id)?.name || "غير محدد",
+        render: (row) => (Array.isArray(cities) ? cities.find((city) => city.id === row.city_id)?.name || "غير محدد" : "غير محدد"),
       },
       {
         header: t("district"),
         accessor: "district_id",
-        render: (row) => districts.find((district) => district.id === row.district_id)?.name || "غير محدد",
+        render: (row) => (Array.isArray(districts) ? districts.find((district) => district.id === row.district_id)?.name || "غير محدد" : "غير محدد"),
       },
       {
         header: t("Permitnumber"),
@@ -291,7 +318,14 @@ const ChartiesPage = () => {
             userId={row.id}
             onEdit={() => {
               if (row) {
-                setSelectedAssociation(row);
+                setSelectedAssociation({
+                  ...row,
+                  auth_image_id: row.auth?.image || "",
+                  auth_number: row.auth?.number || "",
+                  logo_id: row.logo || "",
+                  auth_image_url: row.auth?.Image_url || "",
+                  logo_url: row.logo_url || "",
+                });
                 setIsEditModalOpen(true);
               } else {
                 toast.error(t("no_association_selected"), { autoClose: 3000 });
@@ -312,34 +346,29 @@ const ChartiesPage = () => {
     [t, cities, districts]
   );
 
-  // تحسين fetchDependencies لاستخدام الكاش
-  const optimizedFetchDependencies = useMemo(
-    () => ({
-      city_id: async () => {
-        const cachedData = queryClient.getQueryData(["cities", locale]);
-        if (cachedData) {
-          console.log("Using cached cities data");
-          return cachedData;
-        }
-        console.log("Fetching cities for modal");
-        return await fetchCities(locale);
-      },
-      district_id: async (cityId) => {
-        if (!cityId) {
-          console.log("No cityId provided, returning empty districts");
-          return [];
-        }
-        const cachedData = queryClient.getQueryData(["districts", cityId, locale]);
-        if (cachedData) {
-          console.log(`Using cached districts data for cityId: ${cityId}`);
-          return cachedData;
-        }
-        console.log(`Fetching districts for cityId: ${cityId}`);
-        return await fetchDistricts(cityId, locale);
-      },
-    }),
-    [locale, queryClient]
-  );
+const optimizedFetchDependencies = useMemo(
+  () => ({
+    city_id: async () => {
+      const cachedData = queryClient.getQueryData(["cities", locale]);
+      if (cachedData) {
+        return Array.isArray(cachedData) ? cachedData : cachedData.data || [];
+      }
+      return await fetchCities({}, locale).then((res) => res.data.data || []);
+    },
+    district_id: async (cityId) => {
+      if (!cityId) {
+        return [];
+      }
+      const cachedData = queryClient.getQueryData(["districts", cityId, locale]);
+      if (cachedData) {
+        return cachedData;
+      }
+      return await fetchDistricts(cityId, locale).then((res) => res.data.data || []);
+    },
+  }),
+  [locale, queryClient]
+);
+
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -355,8 +384,8 @@ const ChartiesPage = () => {
         searchConfig={searchConfig}
         currentFilters={{
           ...filters,
-          city_name: cities.find((city) => city.id === filters.city_id)?.name || "",
-          district_name: districts.find((district) => district.id === filters.district_id)?.name || "",
+          city_name: Array.isArray(cities) ? cities.find((city) => city.id === filters.city_id)?.name || "" : "",
+          district_name: Array.isArray(districts) ? districts.find((district) => district.id === filters.district_id)?.name || "" : "",
         }}
       />
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -367,9 +396,10 @@ const ChartiesPage = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={(data) => addAssociationMutation.mutate(data)}
-        initialData={{ status: "active" }}
+        initialData={{ status: "active", auth_image_id: "", logo_id: "" }}
         fieldsConfig={fieldsConfig}
         fetchDependencies={optimizedFetchDependencies}
+        locale={locale}
       />
       <GenericModal
         isOpen={isEditModalOpen}
@@ -379,6 +409,8 @@ const ChartiesPage = () => {
         isEdit={true}
         fieldsConfig={fieldsConfig}
         fetchDependencies={optimizedFetchDependencies}
+        locale={locale}
+        
       />
       <DeleteModal
         isOpen={isDeleteModalOpen}

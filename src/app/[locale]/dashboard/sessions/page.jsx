@@ -35,27 +35,22 @@ const SessionsPage = () => {
   });
   const [error, setError] = useState(null);
 
-  // جلب المساجد
   const { data: mosques = [], error: mosquesError } = useQuery({
     queryKey: ["mosques", locale],
     queryFn: () => {
-      console.log(`Fetching mosques for locale: ${locale}`);
       return fetchMosques({}, locale).then((res) => res.data.data);
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // جلب المدرسين
   const { data: teachers = [], error: teachersError } = useQuery({
     queryKey: ["teachers", locale],
     queryFn: () => {
-      console.log(`Fetching teachers for locale: ${locale}`);
       return fetchTeachers({}, locale).then((res) => res.data.data);
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  // جلب الحلقات
   const { data: sessions = [], error: sessionsError } = useQuery({
     queryKey: ["sessions", filters, locale],
     queryFn: () => {
@@ -65,14 +60,13 @@ const SessionsPage = () => {
     staleTime: 1 * 60 * 1000,
   });
 
-  // إدارة الأخطاء
   useEffect(() => {
     if (mosquesError || teachersError || sessionsError) {
       const errorMessage =
         mosquesError?.message ||
         teachersError?.message ||
         sessionsError?.message ||
-        t("error_loading_data");
+        t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     } else {
@@ -80,37 +74,34 @@ const SessionsPage = () => {
     }
   }, [mosquesError, teachersError, sessionsError, t]);
 
-  // إضافة حلقة
   const addSessionMutation = useMutation({
     mutationFn: (sessionData) => addSession(sessionData, locale),
     onSuccess: () => {
       setIsAddModalOpen(false);
       queryClient.invalidateQueries(["sessions", filters, locale]);
-      toast.success(t("session_added_successfully"), { autoClose: 3000 });
+      toast.success(t("added_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_adding_session");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
   });
 
-  // تعديل حلقة
   const updateSessionMutation = useMutation({
     mutationFn: ({ id, sessionData }) => updateSession(id, sessionData, locale),
     onSuccess: () => {
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["sessions", filters, locale]);
-      toast.success(t("session_updated_successfully"), { autoClose: 3000 });
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_updating_session");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
   });
 
-  // حذف حلقة
   const deleteSessionMutation = useMutation({
     mutationFn: (id) => deleteSession(id, locale),
     onSuccess: () => {
@@ -119,13 +110,12 @@ const SessionsPage = () => {
       toast.success(t("session_deleted_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_deleting_session");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
   });
 
-  // التعامل مع السيرش
   const handleSearch = useCallback(
     debounce((searchTerm) => {
       setFilters((prev) => ({ ...prev, search: searchTerm }));
@@ -133,7 +123,6 @@ const SessionsPage = () => {
     []
   );
 
-  // التعامل مع الفلاتر
   const handleFilter = useCallback(
     debounce((newFilters) => {
       console.log("Applying filters:", newFilters);
@@ -157,7 +146,6 @@ const SessionsPage = () => {
     [mosques, teachers]
   );
 
-  // إعادة ضبط الفلاتر
   const handleResetFilters = useCallback(() => {
     console.log("Resetting filters");
     setFilters({
@@ -172,7 +160,6 @@ const SessionsPage = () => {
     });
   }, []);
 
-  // إعدادات الفلاتر
   const filterConfig = useMemo(
     () => [
       {
@@ -206,7 +193,6 @@ const SessionsPage = () => {
     [mosques, teachers]
   );
 
-  // إعدادات الحقول للإضافة والتعديل
   const fieldsConfig = useMemo(
     () => [
       { name: "name_ar", label: "name_ar", type: "text", required: true },
@@ -236,10 +222,8 @@ const SessionsPage = () => {
     [mosques, teachers]
   );
 
-  // إعدادات السيرش
   const searchConfig = { field: "search", placeholder: "search_sessions" };
 
-  // إعدادات الأعمدة للجدول
   const columns = useMemo(
     () => [
       { header: t("id"), accessor: "id" },
@@ -301,7 +285,6 @@ const SessionsPage = () => {
     [t]
   );
 
-  // تحسين fetchDependencies لاستخدام الكاش
   const optimizedFetchDependencies = useMemo(
     () => ({
       mosque_id: async () => {

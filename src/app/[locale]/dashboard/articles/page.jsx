@@ -21,8 +21,8 @@ const page = () => {
   ];
 
   const data = [
-    { name: "أحمد محمد", email: "ahmed@example.com", date: "2023-10-01" },
-    { name: "سارة علي", email: "sarah@example.com", date: "2023-10-02" },
+    { name: "أحمد ", email: "ahmed@example.com", date: "2023-10-01" },
+    { name: " علي", email: "sarah@example.com", date: "2023-10-02" },
   ];
 
   return (

@@ -12,59 +12,66 @@ import {
 } from "chart.js";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { fetchBestStudents } from "../../../lib/fetchBestStudents";
+import { fetchDashboardData } from "../../../lib/fetchDashboardData";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function DashboardHome() {
   const t = useTranslations();
-  const [stats] = useState({
-    students: 1200,
-    teachers: 85,
-    parents: 950,
-    mosques: 30,
-    associations: 15,
-    employees: 40,
+  const [stats, setStats] = useState({
+    students: 0,
+    teachers: 0,
+    parents: 0,
+    mosques: 0,
+    sessions: 0, // Changed from associations to sessions
+    employees: 0,
   });
   const [bestStudents, setBestStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadBestStudents = async () => {
+    const loadDashboardData = async () => {
       try {
-        const students = await fetchBestStudents();
-        setBestStudents(students);
+        setLoading(true);
+        const { counts, best_students } = await fetchDashboardData();
+        setStats({
+          students: counts.students,
+          teachers: counts.teachers,
+          parents: counts.parents,
+          mosques: counts.mosques,
+          sessions: counts.sessionsCount || 0,
+          employees: counts.admins || 0,
+        });
+        setBestStudents(best_students);
       } catch (error) {
-        console.error("فشل جلب بيانات أفضل الطلاب:", error);
+        setError(t("error"));
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    loadBestStudents();
-  }, []);
+    loadDashboardData();
+  }, [t]);
 
   const data = {
     labels: [
       t("students"),
       t("teachers"),
-      t("sessions"),
+      t("parents"),
       t("mosques"),
-      t("charities"),
+      t("sessions"),
       t("employees"),
     ],
     datasets: [
       {
-        label: "الإحصائيات",
+        label: t("statistics"),
         data: [
           stats.students,
           stats.teachers,
           stats.parents,
           stats.mosques,
-          stats.associations,
+          stats.sessions, 
           stats.employees,
         ],
         backgroundColor: [
@@ -122,19 +129,28 @@ export default function DashboardHome() {
   const labelsMap = {
     students: t("students"),
     teachers: t("teachers"),
-    parents: t("sessions"),
+    parents: t("parents"),
     mosques: t("mosques"),
-    associations: t("charities"),
+    sessions: t("sessions"), 
     employees: t("employees"),
   };
 
+  if (loading) {
+    return <div className="text-center p-8 text-gray-500">{t("loading")}</div>;
+  }
+
+  if (error) {
+    return <div className="text-center p-8 text-red-500">{error}</div>;
+  }
+
   return (
-    <div className="p-8 max-sm:p-0 max-w-7xl mx-auto " >
+    <div className="p-8 max-sm:p-4 max-w-7xl mx-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
         {Object.entries(stats).map(([key, value]) => (
           <div
             key={key}
             className="bg-white text-[#0B7459] rounded-2xl shadow-xl p-8 flex flex-col items-center transition-transform hover:scale-105 hover:shadow-2xl duration-300"
+            aria-label={labelsMap[key]}
           >
             <p className="text-lg font-semibold mb-4">{labelsMap[key]}</p>
             <p className="text-5xl font-extrabold drop-shadow-lg">{value}</p>
@@ -143,8 +159,8 @@ export default function DashboardHome() {
       </div>
 
       <div
-        className="bg-white rounded-2xl shadow-xl p-10 mb-16"
-        style={{ height: 480 }}
+        className="bg-white rounded-2xl shadow-xl p-10 mb-16 h-[480px] max-sm:h-[300px]"
+        aria-label={t("statistics_chart")}
       >
         <Bar options={options} data={data} />
       </div>
@@ -160,8 +176,8 @@ export default function DashboardHome() {
               >
                 <img
                   src={student.profile_picture}
-                  alt={student.name}
-                  className="w-14 h-14 rounded-full  mx-2"
+                  alt={t("profile_picture", { name: student.name })}
+                  className="w-14 h-14 rounded-full mx-2"
                 />
                 <div className="mx-2">
                   <p className="text-lg font-semibold text-[#0B7459]">{student.name}</p>

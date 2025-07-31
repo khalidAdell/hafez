@@ -63,13 +63,13 @@ const CitiesPage = () => {
     onSuccess: (data) => {
       setIsAddModalOpen(false);
       queryClient.invalidateQueries(["cities", filters, locale]);
-      toast.success(data?.message || t("city_added_successfully"), {
+      toast.success(data?.message || t("added_successfully"), {
         autoClose: 3000,
       });
     },
   onError: (err) => {
   const response = err.response?.data;
-  const defaultMessage = t("error_adding_city"); 
+  const defaultMessage = t("error"); 
   let errorMessage = response?.message || defaultMessage;
 
   if (response?.data && typeof response.data === "object") {
@@ -90,13 +90,13 @@ const CitiesPage = () => {
     onSuccess: (data) => {
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["cities", filters, locale]);
-      toast.success(data?.message || t("city_updated_successfully"), {
+      toast.success(data?.message || t("updated_successfully"), {
         autoClose: 3000,
       });
     },
    onError: (err) => {
   const response = err.response?.data;
-  const defaultMessage = t("error_adding_city"); 
+  const defaultMessage = t("error"); 
   let errorMessage = response?.message || defaultMessage;
 
   if (response?.data && typeof response.data === "object") {
@@ -117,11 +117,11 @@ const CitiesPage = () => {
     onSuccess: () => {
       setIsDeleteModalOpen(false);
       queryClient.invalidateQueries(["cities", filters, locale]);
-      toast.success(t("city_deleted_successfully"), { autoClose: 3000 });
+      toast.success(t("deleted_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
       const errorMessage =
-        err.response?.data?.message || t("error_deleting_city");
+        err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
@@ -140,7 +140,7 @@ const CitiesPage = () => {
       });
       setIsEditModalOpen(true);
     } catch (error) {
-      toast.error(t("error_loading_city_data"), { autoClose: 3000 });
+      toast.error(t("error"), { autoClose: 3000 });
     }
   };
 

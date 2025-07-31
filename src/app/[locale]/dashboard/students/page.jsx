@@ -109,9 +109,9 @@ const StudentsPage = () => {
       await addUser({ ...studentData, type: "student" }, locale);
       setIsAddModalOpen(false);
       queryClient.invalidateQueries(["students"]);
-      toast.success(t("student_added_successfully"), { autoClose: 3000 });
+      toast.success(t("added_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_adding_student");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -125,9 +125,9 @@ const StudentsPage = () => {
       await updateUser(selectedStudent.id, { ...studentData, type: "student" }, locale);
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["students"]);
-      toast.success(t("student_updated_successfully"), { autoClose: 3000 });
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_updating_student");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -143,7 +143,7 @@ const StudentsPage = () => {
       queryClient.invalidateQueries(["students"]);
       toast.success(t("student_deleted_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_deleting_student");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -267,7 +267,7 @@ const StudentsPage = () => {
   }
 
   if (error) {
-    return <p className="text-red-500 text-center mb-4">{error.message || t("error_loading_students")}</p>;
+    return <p className="text-red-500 text-center mb-4">{error.message || t("error")}</p>;
   }
 
   return (

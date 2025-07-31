@@ -36,14 +36,12 @@ const ParentsPage = () => {
     pagination: 1,
   });
 
-  // جلب المدن
   const { data: cities, isLoading: citiesLoading } = useQuery({
-    queryKey: ["cities", locale], // إضافة locale للكاش
-    queryFn: () => fetchCities(locale), // تمرير locale لـ fetchCities
+    queryKey: ["cities", locale], 
+    queryFn: () => fetchCities(locale), 
     staleTime: Infinity,
   });
 
-  // جلب الأحياء بناءً على city_id
   const { data: districts, isLoading: districtsLoading } = useQuery({
     queryKey: ["districts", filters.city_id, locale],
     queryFn: () => fetchDistricts(filters.city_id, locale),
@@ -51,10 +49,9 @@ const ParentsPage = () => {
     staleTime: Infinity,
   });
 
-  // جلب الآباء
   const { data: response, error, isLoading } = useQuery({
     queryKey: ["parents", filters, locale],
-    queryFn: () => fetchUsers({ ...filters, locale }), // تمرير locale للـ API
+    queryFn: () => fetchUsers({ ...filters, locale }), 
     staleTime: 5 * 60 * 1000,
   });
 
@@ -109,9 +106,9 @@ const ParentsPage = () => {
       await addUser({ ...parentData, type: "parent" });
       setIsAddModalOpen(false);
       queryClient.invalidateQueries(["parents"]);
-      toast.success(t("parent_added_successfully"), { autoClose: 3000 });
+      toast.success(t("added_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_adding_parent");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -125,9 +122,9 @@ const ParentsPage = () => {
       await updateUser(selectedParent.id, { ...parentData, type: "parent" });
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["parents"]);
-      toast.success(t("parent_updated_successfully"), { autoClose: 3000 });
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_updating_parent");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
@@ -141,9 +138,9 @@ const ParentsPage = () => {
       await deleteUser(selectedParent.id);
       setIsDeleteModalOpen(false);
       queryClient.invalidateQueries(["parents"]);
-      toast.success(t("parent_deleted_successfully"), { autoClose: 3000 });
+      toast.success(t("deleted_successfully"), { autoClose: 3000 });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || t("error_deleting_parent");
+      const errorMessage = err.response?.data?.message || t("error");
       toast.error(errorMessage, { autoClose: 3000 });
     }
   };
