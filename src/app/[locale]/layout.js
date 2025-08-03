@@ -28,9 +28,12 @@ export default async function RootLayout({ children, params }) {
   const messagesContent = await fs.readFile(messagesPath, "utf8");
   const messages = JSON.parse(messagesContent);
 
-  const res = await fetch("https://hafez.share.net.sa/api/website-configuration", {
-    cache: "no-store",
-  });
+  const res = await fetch(
+    "https://hafez.share.net.sa/api/website-configuration",
+    {
+      cache: "no-store",
+    }
+  );
   const result = await res.json();
   const config = result.success ? result.data : null;
 
