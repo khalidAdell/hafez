@@ -34,7 +34,7 @@ export function getDashboardLinks(t, locale) {
       label: t("articles_blog"),
       icon: FaEdit,
       children: [
-        { label: t("articles"), href: `/${locale}/dashboard/articles`, icon: FaEdit },
+        { label: t("sections"), href: `/${locale}/dashboard/articles`, icon: FaEdit },
         { label: t("blog"), href: `/${locale}/dashboard/blogs`, icon: FaBlog },
       ],
     },
@@ -46,7 +46,7 @@ export function getDashboardLinks(t, locale) {
         { label: t("teachers"), href: `/${locale}/dashboard/teachers`, icon: FaChalkboardTeacher },
         { label: t("students"), href: `/${locale}/dashboard/students`, icon: FaUserGraduate },
         { label: t("parents"), href: `/${locale}/dashboard/parents`, icon: FaUserFriends },
-        { label: t("user_roles"), href: `/${locale}/dashboard/roles`, icon: FaUserShield },
+        // { label: t("user_roles"), href: `/${locale}/dashboard/roles`, icon: FaUserShield },
         { label: t("failed_logins_users"), href: `/${locale}/dashboard/users/failed-logins`, icon: FaExclamationTriangle },
       ],
     },
@@ -55,7 +55,7 @@ export function getDashboardLinks(t, locale) {
       icon: FaBriefcase,
       children: [
         { label: t("employee_list"), href: `/${locale}/dashboard/employees`, icon: FaBriefcase },
-        { label: t("failed_logins_employees"), href: `/${locale}/dashboard/employees/failed-logins`, icon: FaExclamationTriangle },
+        // { label: t("failed_logins_employees"), href: `/${locale}/dashboard/employees/failed-logins`, icon: FaExclamationTriangle },
       ],
     },
     {
@@ -97,7 +97,7 @@ export function getDashboardLinks(t, locale) {
       children: [
         { label: t("header_settings"), href: `/${locale}/dashboard/themes/header`, icon: FaCog },
         { label: t("footer_settings"), href: `/${locale}/dashboard/themes/footer`, icon: FaCog },
-        { label: t("pages_settings"), href: `/${locale}/dashboard/themes/pages`, icon: FaFile },
+        // { label: t("pages_settings"), href: `/${locale}/dashboard/themes/pages`, icon: FaFile },
         { label: t("appearance_settings"), href: `/${locale}/dashboard/themes/settings`, icon: FaPalette },
       ],
     },

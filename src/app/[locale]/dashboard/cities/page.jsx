@@ -338,6 +338,7 @@ const CitiesPage = () => {
           status: selectedCity?.status || "active",
           image_id: selectedCity?.image_id || "",
           image_url: selectedCity?.image_url || "",
+          image: selectedCity?.image_id||selectedCity?.image || "",
         }}
         isEdit={true}
         fieldsConfig={fieldsConfig}

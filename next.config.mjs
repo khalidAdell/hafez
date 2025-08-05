@@ -7,7 +7,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "hafez.share.net.sa",
+        hostname: "7afez.share.net.sa",
         pathname: "/uploads/all/**",
       },
     ],

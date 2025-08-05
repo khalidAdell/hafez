@@ -31,7 +31,7 @@ export default function Footer({ config }) {
                 width={64}
                 height={56}
                 alt="Hafez Footer Logo"
-                className="h-14 sm:h-16 w-28 max-h-16"
+                className="h-14 sm:h-16 object-cover w-16 max-h-16"
                 style={{ height: "auto" }} 
               />
             </Link>

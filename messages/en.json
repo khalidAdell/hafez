@@ -340,5 +340,17 @@
   "faq_content_en": "Faq Content (en)",
   "faq_name_ar": "Faq Name (ar)",
   "faq_name_en": "Faq Name (en)",
-  "statistics_chart": "Statistics Chart"
+  "statistics_chart": "Statistics Chart",
+  "student-name": "Student Name",
+  "view-details": "View Details",
+  "title_ar": "Title (AR)",
+  "title_en": "Title (EN)",
+  "short_description_ar": "Short Description (AR)",
+  "short_description_en": "Short Description (EN)",
+  "description_ar": "Full Description (AR)",
+  "description_en": "Full Description (EN)",
+  "category_id": "Category",
+  "img": "Image",
+  "category": "Category",
+  "pending": "Pending"
 }

@@ -10,7 +10,7 @@ import path from "path";
 import fs from "fs/promises";
 
 export default async function Home({ params }) {
-  const { locale } = await  params;
+  const { locale } = await params;
 
   const messagesPath = path.join(process.cwd(), "messages", `${locale}.json`);
   let messages;
@@ -24,7 +24,7 @@ export default async function Home({ params }) {
 
   const t = (key) => messages[key] || key;
 
-  const res = await fetch("https://hafez.share.net.sa/api/home", {
+  const res = await fetch("https://7afez.share.net.sa/api/home", {
     headers: {
       Accept: "application/json",
       "Accept-Language": locale,
@@ -34,9 +34,12 @@ export default async function Home({ params }) {
   const result = await res.json();
   const data = result.data;
 
-  const configRes = await fetch("https://hafez.share.net.sa/api/website-configuration", {
-    cache: "no-store",
-  });
+  const configRes = await fetch(
+    "https://7afez.share.net.sa/api/website-configuration",
+    {
+      cache: "no-store",
+    }
+  );
   const configResult = await configRes.json();
   const config = configResult.success ? configResult.data : null;
 

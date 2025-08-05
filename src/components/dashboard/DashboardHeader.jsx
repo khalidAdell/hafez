@@ -144,7 +144,7 @@ export default function DashboardHeader({
         {/* Page Path */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2 text-gray-600 text-base sm:text-lg font-medium">
-            <Link href={backUrl } className="hover:underline text-gray-600">
+            <Link href={backUrl} className="hover:underline text-gray-600">
               {t("dashboardHome")}
             </Link>
             <span>›</span>

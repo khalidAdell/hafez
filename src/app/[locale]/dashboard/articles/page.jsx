@@ -246,7 +246,7 @@ const BlogSectionsPage = () => {
     <div className="p-8 max-w-7xl mx-auto">
       <GlobalToast />
       <DashboardHeader
-        pageTitle={t("articles")}
+        pageTitle={t("sections")}
         backUrl={`/${locale}/dashboard`}
         onAdd={() => setIsAddModalOpen(true)}
         onSearch={handleSearch}

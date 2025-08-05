@@ -29,7 +29,7 @@ export default async function RootLayout({ children, params }) {
   const messages = JSON.parse(messagesContent);
 
   const res = await fetch(
-    "https://hafez.share.net.sa/api/website-configuration",
+    "https://7afez.share.net.sa/api/website-configuration",
     {
       cache: "no-store",
     }
@@ -43,7 +43,6 @@ export default async function RootLayout({ children, params }) {
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
           {config && <Footer config={config} />}
-          <GlobalToast />
         </NextIntlClientProvider>
       </body>
     </html>

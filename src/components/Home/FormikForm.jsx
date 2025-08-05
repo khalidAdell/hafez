@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from "react";
 import { useFormik } from "formik";
@@ -6,7 +6,6 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
-
 
 const FormikForm = () => {
   const t = useTranslations();
@@ -29,7 +28,7 @@ const FormikForm = () => {
     onSubmit: async (values, { resetForm }) => {
       try {
         const response = await axios.post(
-          "https://hafez.share.net.sa/api/contact-us",
+          "https://7afez.share.net.sa/api/contact-us",
           values,
           {
             headers: {
@@ -40,10 +39,18 @@ const FormikForm = () => {
         );
 
         if (response.data.success) {
-          toast.success(response.data.message || t("submitSuccess") || "تم إرسال الرسالة بنجاح");
+          toast.success(
+            response.data.message ||
+              t("submitSuccess") ||
+              "تم إرسال الرسالة بنجاح"
+          );
           resetForm();
         } else {
-          toast.error(response.data.message || t("submitFailed") || "حدث خطأ أثناء الإرسال");
+          toast.error(
+            response.data.message ||
+              t("submitFailed") ||
+              "حدث خطأ أثناء الإرسال"
+          );
         }
       } catch (error) {
         console.error(error);
@@ -64,7 +71,9 @@ const FormikForm = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             className={`w-full p-2 rounded-xl border ${
-              formik.touched.name && formik.errors.name ? "border-white" : "border-gray-300"
+              formik.touched.name && formik.errors.name
+                ? "border-white"
+                : "border-gray-300"
             } text-gray-900`}
             required
           />
@@ -80,7 +89,9 @@ const FormikForm = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             className={`w-full p-2 rounded-xl border ${
-              formik.touched.email && formik.errors.email ? "border-white" : "border-gray-300"
+              formik.touched.email && formik.errors.email
+                ? "border-white"
+                : "border-gray-300"
             } text-gray-900`}
             required
           />
@@ -96,14 +107,15 @@ const FormikForm = () => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             className={`w-full p-2 rounded-xl border ${
-              formik.touched.phone && formik.errors.phone ? "border-white" : "border-gray-300"
+              formik.touched.phone && formik.errors.phone
+                ? "border-white"
+                : "border-gray-300"
             } text-gray-900`}
             required
           />
           {formik.touched.phone && formik.errors.phone ? (
             <div className=" text-sm">{formik.errors.phone}</div>
           ) : null}
-
         </div>
 
         <textarea
@@ -114,7 +126,9 @@ const FormikForm = () => {
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           className={`w-full p-2 rounded-xl border ${
-            formik.touched.message && formik.errors.message ? "border-white" : "border-gray-300"
+            formik.touched.message && formik.errors.message
+              ? "border-white"
+              : "border-gray-300"
           } text-gray-900`}
           required
         ></textarea>

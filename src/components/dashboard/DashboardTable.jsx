@@ -13,6 +13,7 @@ export default function DashboardTable({ columns = [], data = [] }) {
     );
   }
 
+
   return (
     <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -21,7 +22,7 @@ export default function DashboardTable({ columns = [], data = [] }) {
             {columns.map((column, index) => (
               <th
                 key={index}
-                className={`px-6 py-3 text-sm font-semibold text-gray-600 uppercase tracking-wider ${
+                className={`px-6 py-3 text-sm min-w-[7rem] truncate font-semibold text-gray-600 uppercase tracking-wider ${
                   isArabic ? "text-right" : "text-left"
                 }`}
               >
@@ -45,6 +46,7 @@ export default function DashboardTable({ columns = [], data = [] }) {
                       className={`px-2 py-1 inline-flex text-sm leading-5 font-medium rounded-full
                         ${
                           row[column.accessor] === "نشط" ||
+                          row[column.accessor] === "حضور" ||
                           row[column.accessor] === "active"
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"

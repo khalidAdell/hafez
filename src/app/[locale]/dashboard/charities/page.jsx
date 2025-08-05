@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardHeader from "../../../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../../../components/dashboard/DashboardTable";
 import CustomActions from "../../../../components/modals/CustomActions";
-import GenericModal from "../../../../components/modals/GenericModal";
+import CharityModal from "./CharityModal";
 import DeleteModal from "../../../../components/modals/DeleteModal";
 import GlobalToast from "../../../../components/GlobalToast";
 import { fetchAssociations, addAssociation, updateAssociation, deleteAssociation, fetchCities, fetchDistricts } from "../../../../lib/api";
@@ -36,32 +36,46 @@ const ChartiesPage = () => {
   });
   const [error, setError] = useState(null);
 
-  const { data: cities = [], error: citiesError } = useQuery({
+  const [cityId, setCityId] = useState("");
+
+  const { data: citiesData, error: citiesError } = useQuery({
     queryKey: ["cities", locale],
-    queryFn: () => {
-      return fetchCities({}, locale).then((res) => {
+    queryFn: () =>
+      fetchCities({}, locale).then((res) => {
         if (!res.data?.data) {
-          throw new Error("البيانات المرجعة من fetchCities ليست مصفوفة");
+          throw new Error(t("error_fetching_cities"));
         }
         return res.data.data;
-      });
-    },
+      }),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: districts = [], error: districtsError } = useQuery({
-    queryKey: ["districts", filters.city_id, locale],
-    queryFn: () => {
-      return fetchDistricts(filters.city_id, locale).then((res) => {
-        if (!res.data?.data) {
-          throw new Error("البيانات المرجعة من fetchDistricts ليست مصفوفة");
-        }
-        return res.data.data;
-      });
-    },
-    enabled: !!filters.city_id,
+  const cityOptions = useMemo(() => {
+    if (!Array.isArray(citiesData)) return [];
+    return citiesData.map((city) => ({
+      value: city.id,
+      label:
+        locale === "ar" ? city.name_ar || city.name : city.name_en || city.name,
+    }));
+  }, [citiesData, locale]);
+
+  const { data: districtsData = [], error: districtsError } = useQuery({
+    queryKey: ["districts", locale],
+    queryFn: () => fetchDistricts("", locale),
     staleTime: 5 * 60 * 1000,
   });
+
+  const districtOptions = useMemo(() => {
+    return districtsData
+      .map((district) => ({
+        value: district.id,
+        label:
+          locale === "ar"
+            ? district.name_ar || district.name
+            : district.name_en || district.name,
+      }));
+  }, [districtsData, locale]);
+
 
   const { data: associations = [], error: associationsError } = useQuery({
     queryKey: ["associations", filters, locale],
@@ -160,24 +174,22 @@ const ChartiesPage = () => {
   const handleFilter = useCallback(
     debounce((newFilters) => {
       const updatedFilters = { ...newFilters };
-      if (newFilters.city_name) {
-        const selectedCity = cities.find((city) => city.name === newFilters.city_name);
-        updatedFilters.city_id = selectedCity ? selectedCity.id : "";
+      if (newFilters.city_id) {
+        updatedFilters.city_id = newFilters.city_id;
       } else {
         updatedFilters.city_id = "";
       }
-      if (newFilters.district_name) {
-        const selectedDistrict = districts.find((district) => district.name === newFilters.district_name);
-        updatedFilters.district_id = selectedDistrict ? selectedDistrict.id : "";
+      if (newFilters.district_id) {
+        updatedFilters.district_id = newFilters.district_id;
       } else {
         updatedFilters.district_id = "";
       }
-      delete updatedFilters.city_name;
-      delete updatedFilters.district_name;
+      console.log("Applying filters:", updatedFilters);
       setFilters((prev) => ({ ...prev, ...updatedFilters }));
     }, 500),
-    [cities, districts]
+    []
   );
+
 
   const handleResetFilters = useCallback(() => {
     setFilters({
@@ -204,16 +216,24 @@ const ChartiesPage = () => {
         ],
       },
       {
-        name: "city_name",
+        name: "city_id",
         label: "city",
         type: "select",
-        options: Array.isArray(cities) ? cities.map((city) => ({ value: city.name, label: city.name })) : [],
+        options: cityOptions,
       },
       {
-        name: "district_name",
+        name: "district_id",
         label: "district",
         type: "select",
-        options: Array.isArray(districts) ? districts.map((district) => ({ value: district.name, label: district.name })) : [],
+        options: Array.isArray(districtsData)
+          ? districtsData.map((district) => ({
+              value: district.id,
+              label:
+                locale === "ar"
+                  ? district.name_ar || district.name
+                  : district.name_en || district.name,
+            }))
+          : [],
       },
       {
         name: "pagination",
@@ -222,7 +242,7 @@ const ChartiesPage = () => {
         min: 0,
       },
     ],
-    [cities, districts]
+    [cityOptions, districtsData, locale, t]
   );
 
 
@@ -258,7 +278,7 @@ const fieldsConfig = useMemo(
       name: "city_id",
       label: "city",
       type: "select",
-      options: Array.isArray(cities) ? cities.map((city) => ({ value: city.id, label: city.name })) : [],
+      options: Array.isArray(citiesData) ? citiesData.map((city) => ({ value: city.id, label: city.name })) : [],
     },
     {
       name: "district_id",
@@ -268,7 +288,13 @@ const fieldsConfig = useMemo(
       options: [],
     },
   ],
-  [cities]
+  [
+    cityOptions,
+    districtOptions,
+    locale,
+    t,
+    isEditModalOpen,
+  ]
 );
 
   const searchConfig = { field: "search", placeholder: "search_associations" };
@@ -280,12 +306,12 @@ const fieldsConfig = useMemo(
       {
         header: t("city"),
         accessor: "city_id",
-        render: (row) => (Array.isArray(cities) ? cities.find((city) => city.id === row.city_id)?.name || "غير محدد" : "غير محدد"),
+        render: (row) => (Array.isArray(citiesData) ? citiesData.find((city) => city.id === row.city_id)?.name || "غير محدد" : "غير محدد"),
       },
       {
         header: t("district"),
         accessor: "district_id",
-        render: (row) => (Array.isArray(districts) ? districts.find((district) => district.id === row.district_id)?.name || "غير محدد" : "غير محدد"),
+        render: (row) => (Array.isArray(districtsData) ? districtsData.find((district) => district.id === row.district_id)?.name || "غير محدد" : "غير محدد"),
       },
       {
         header: t("Permitnumber"),
@@ -343,12 +369,12 @@ const fieldsConfig = useMemo(
         ),
       },
     ],
-    [t, cities, districts]
+    [t, citiesData, districtsData]
   );
 
 const optimizedFetchDependencies = useMemo(
-  () => ({
-    city_id: async () => {
+  () => ({
+    city_id: async () => {
       const cachedData = queryClient.getQueryData(["cities", locale]);
       if (cachedData) {
         return Array.isArray(cachedData) ? cachedData : cachedData.data || [];
@@ -384,33 +410,35 @@ const optimizedFetchDependencies = useMemo(
         searchConfig={searchConfig}
         currentFilters={{
           ...filters,
-          city_name: Array.isArray(cities) ? cities.find((city) => city.id === filters.city_id)?.name || "" : "",
-          district_name: Array.isArray(districts) ? districts.find((district) => district.id === filters.district_id)?.name || "" : "",
+          city_name: Array.isArray(citiesData) ? citiesData.find((city) => city.id === filters.city_id)?.name || "" : "",
+          district_name: Array.isArray(districtsData) ? districtsData.find((district) => district.id === filters.district_id)?.name || "" : "",
         }}
       />
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <center>
         <DashboardTable columns={columns} data={associations} />
       </center>
-      <GenericModal
+      <CharityModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={(data) => addAssociationMutation.mutate(data)}
         initialData={{ status: "active", auth_image_id: "", logo_id: "" }}
-        fieldsConfig={fieldsConfig}
-        fetchDependencies={optimizedFetchDependencies}
+        isEdit={false}
+        cities={citiesData}
+        districts={districtsData}
         locale={locale}
+        setCityId={setCityId}
       />
-      <GenericModal
+      <CharityModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={(data) => updateAssociationMutation.mutate({ id: selectedAssociation.id, associationData: data })}
         initialData={selectedAssociation || {}}
         isEdit={true}
-        fieldsConfig={fieldsConfig}
-        fetchDependencies={optimizedFetchDependencies}
+        cities={citiesData}
+        districts={districtsData}
         locale={locale}
-        
+        setCityId={setCityId}
       />
       <DeleteModal
         isOpen={isDeleteModalOpen}

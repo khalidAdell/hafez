@@ -11,7 +11,7 @@ import CustomActions from "../../../../components/modals/CustomActions";
 import GenericModal from "../../../../components/modals/GenericModal";
 import DeleteModal from "../../../../components/modals/DeleteModal";
 import GlobalToast from "../../../../components/GlobalToast";
-import { fetchSessions, addSession, updateSession, deleteSession, fetchMosques, fetchTeachers } from "../../../../lib/api";
+import { fetchSessions, addSession, updateSession, deleteSession, fetchMosques, fetchUsers} from "../../../../lib/api";
 import { usePathname } from "next/navigation";
 
 const SessionsPage = () => {
@@ -24,7 +24,7 @@ const SessionsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [filters, setFilters] = useState({
-    status: "active",
+    status: "",
     search: "",
     sort_by: "name",
     order: "asc",
@@ -46,7 +46,7 @@ const SessionsPage = () => {
   const { data: teachers = [], error: teachersError } = useQuery({
     queryKey: ["teachers", locale],
     queryFn: () => {
-      return fetchTeachers({}, locale).then((res) => res.data.data);
+      return fetchUsers({ type: "teacher" }, locale).then((res) => res.data.data);
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -167,8 +167,8 @@ const SessionsPage = () => {
         label: "status",
         type: "select",
         options: [
-          { value: "active", label: "active" },
-          { value: "inactive", label: "inactive" },
+          { value: "active", label: t("active") },
+          { value: "inactive", label: t("inactive") },
         ],
       },
       {
@@ -214,8 +214,8 @@ const SessionsPage = () => {
         label: "status",
         type: "select",
         options: [
-          { value: "active", label: "active" },
-          { value: "inactive", label: "inactive" },
+          { value: "active", label: t("active") },
+          { value: "inactive", label: t("inactive") },
         ],
       },
     ],
@@ -303,7 +303,7 @@ const SessionsPage = () => {
           return cachedData;
         }
         console.log("Fetching teachers for modal");
-        return await fetchTeachers({}, locale).then((res) => res.data.data);
+        return await fetchUsers({ type: "teacher" }, locale).then((res) => res.data.data);
       },
     }),
     [locale, queryClient]
@@ -335,7 +335,7 @@ const SessionsPage = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={(data) => addSessionMutation.mutate(data)}
-        initialData={{ status: "active" }}
+        initialData={{  status: "" }}
         fieldsConfig={fieldsConfig}
         fetchDependencies={optimizedFetchDependencies}
       />

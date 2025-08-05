@@ -1,21 +1,21 @@
-  import axios from "axios";
-  import Cookies from "js-cookie";
+import axios from "axios";
+import Cookies from "js-cookie";
 
-  const createDashboardAxios = (locale = "ar") => {
-    const token = Cookies.get("token") || null; 
-    const headers = {
-      Accept: "application/json",
-      "Accept-Language": locale,
-    };
-
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    return axios.create({
-      baseURL: "https://hafez.share.net.sa/api",
-      headers,
-    });
+const createDashboardAxios = (locale = "ar") => {
+  const token = Cookies.get("token") || null;
+  const headers = {
+    Accept: "application/json",
+    "Accept-Language": locale,
   };
 
-  export default createDashboardAxios;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return axios.create({
+    baseURL: "https://7afez.share.net.sa/api",
+    headers,
+  });
+};
+
+export default createDashboardAxios;

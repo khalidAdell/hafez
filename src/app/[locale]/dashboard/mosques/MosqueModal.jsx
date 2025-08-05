@@ -1,11 +1,11 @@
-// src/app/[locale]/dashboard/mosques/GenericModal.jsx
+// src/app/[locale]/dashboard/mosques/MosqueModal.jsx
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
-import CustomFilePicker from "../CustomFilePicker";
-import DeviceFileUpload from "../DeviceFileUpload";
+import CustomFilePicker from "../../../../components/CustomFilePicker";
+import DeviceFileUpload from "../../../../components/DeviceFileUpload";
 
-const GenericModal = ({
+const MosqueModal = ({
   isOpen,
   onClose,
   onSubmit,
@@ -21,34 +21,24 @@ const GenericModal = ({
   const [districtOptions, setDistrictOptions] = useState([]);
   const [associationOptions, setAssociationOptions] = useState([]);
 
-  // Initialize formData with initialData
+  // Initialize formData with initialData, flattening nested IDs
   useEffect(() => {
-    const initializedData = {};
-    fieldsConfig.forEach((field) => {
-      let value = initialData[field.name] || "";
-      // Handle nested fields if specified in fieldsConfig
-      if (field.nestedPath) {
-        const nestedValue = field.nestedPath.split(".").reduce((obj, key) => obj?.[key], initialData);
-        value = nestedValue !== undefined ? String(nestedValue) : value;
-      }
-      initializedData[field.name] = value;
-    });
-    // Handle image fields
-    initializedData.image_id = initialData.image_id || initialData.image ||initialData.upload_id || "";
-    initializedData.image_url = initialData.image_url || "";
-    setFormData(initializedData);
-  }, [initialData, fieldsConfig]);
+    const flattenedData = {
+      ...initialData,
+      image_id: initialData.image_id || initialData.image || "",
+      image_url: initialData.image_url || "",
+      city_id: initialData.district?.city?.id ? String(initialData.district.city.id) : String(initialData.city_id || ""),
+      district_id: initialData.district?.id ? String(initialData.district.id) : String(initialData.district_id || ""),
+      association_id: initialData.association?.id ? String(initialData.association.id) : String(initialData.association_id || ""),
+      user_id: initialData.user?.id ? String(initialData.user.id) : String(initialData.user_id || ""),
+    };
+    setFormData(flattenedData);
+  }, [initialData]);
 
   // Fetch districts when city_id changes or on initial load
   useEffect(() => {
-    const districtField = fieldsConfig.find((f) => f.name === "district_id");
-    if (
-      districtField &&
-      districtField.dependsOn === "city_id" &&
-      formData.city_id &&
-      fetchDependencies.district_id
-    ) {
-      const fetchDistrictsForCity = async () => {
+    const fetchDistrictsForCity = async () => {
+      if (formData.city_id && fetchDependencies.district_id) {
         try {
           const districts = await fetchDependencies.district_id(formData.city_id);
           const options = districts.map((district) => ({
@@ -65,28 +55,21 @@ const GenericModal = ({
           setDistrictOptions([]);
           setFormData((prev) => ({ ...prev, district_id: "", association_id: "" }));
         }
-      };
-      fetchDistrictsForCity();
-    } else if (districtField && (formData.district_id || formData.association_id)) {
-      // Reset dependent fields if city_id is missing or fetchDependencies.district_id is absent
-      setFormData((prev) => ({ ...prev, district_id: "", association_id: "" }));
-      setDistrictOptions([]);
-    }
-  }, [formData.city_id, fetchDependencies.district_id, isEdit, t, fieldsConfig]);
+      } else {
+        setDistrictOptions([]);
+        if (formData.district_id || formData.association_id) {
+          setFormData((prev) => ({ ...prev, district_id: "", association_id: "" }));
+        }
+      }
+    };
+
+    fetchDistrictsForCity();
+  }, [formData.city_id, fetchDependencies, t, isEdit]);
 
   // Fetch associations when city_id and district_id change or on initial load
   useEffect(() => {
-    const associationField = fieldsConfig.find((f) => f.name === "association_id");
-    if (
-      associationField &&
-      Array.isArray(associationField.dependsOn) &&
-      associationField.dependsOn.includes("city_id") &&
-      associationField.dependsOn.includes("district_id") &&
-      formData.city_id &&
-      formData.district_id &&
-      fetchDependencies.association_id
-    ) {
-      const fetchAssociationsForCityAndDistrict = async () => {
+    const fetchAssociationsForCityAndDistrict = async () => {
+      if (formData.city_id && formData.district_id && fetchDependencies.association_id) {
         try {
           const associations = await fetchDependencies.association_id(
             formData.city_id,
@@ -106,41 +89,36 @@ const GenericModal = ({
           setAssociationOptions([]);
           setFormData((prev) => ({ ...prev, association_id: "" }));
         }
-      };
-      fetchAssociationsForCityAndDistrict();
-    } else if (associationField && formData.association_id) {
-      // Reset association_id if dependencies are missing
-      setFormData((prev) => ({ ...prev, association_id: "" }));
-      setAssociationOptions([]);
-    }
-  }, [formData.city_id, formData.district_id, fetchDependencies.association_id, isEdit, t, fieldsConfig]);
+      } else {
+        setAssociationOptions([]);
+        if (formData.association_id) {
+          setFormData((prev) => ({ ...prev, association_id: "" }));
+        }
+      }
+    };
+
+    fetchAssociationsForCityAndDistrict();
+  }, [formData.city_id, formData.district_id, fetchDependencies, t, isEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const field = fieldsConfig.find((f) => f.name === name);
 
-    if (field && field.dependsOn) {
-      if (name === "city_id" && setCityId) {
-        setCityId(value);
-        setFormData((prev) => ({ ...prev, district_id: "", association_id: "", [name]: value }));
-      } else if (name === "district_id") {
-        setFormData((prev) => ({ ...prev, association_id: "", [name]: value }));
-      } else {
-        setFormData((prev) => ({ ...prev, [name]: value }));
-      }
+    if (name === "city_id" && setCityId) {
+      setCityId(value);
+      setFormData((prev) => ({ ...prev, district_id: "", association_id: "", [name]: value }));
+    } else if (name === "district_id") {
+      setFormData((prev) => ({ ...prev, association_id: "", [name]: value }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleFileChange = (name, file, imageId, imageUrl) => {    
+  const handleFileChange = (name, file, imageId, imageUrl) => {
     setFormData((prev) => ({
       ...prev,
       [name]: file,
-      image_id: imageId || prev.image_id || prev.upload_id || prev.icon,
-      icon: name === "icon" ? imageId || prev.image_id || prev.upload_id || prev.icon : prev.icon,
+      image_id: imageId || prev.image_id,
       image_url: imageUrl || prev.image_url,
-      image: imageId || prev.image_id,
     }));
   };
 
@@ -209,9 +187,9 @@ const GenericModal = ({
                           {option.label}
                         </option>
                       ))
-                    : (field.options || []).map((option,index) => (
+                    : (field.options || []).map((option) => (
                         <option
-                          key={`${option.value}-${index}` || `${option.id}-${index}`}
+                          key={option.value || option.id}
                           value={option.value || option.id}
                         >
                           {option.label || option.name}
@@ -238,7 +216,7 @@ const GenericModal = ({
                   onFileChange={handleFileChange}
                   locale={locale}
                   imageUrl={formData.image_url}
-                  imageId={formData.image_id || formData.upload_id || formData.icon || formData.image}
+                  imageId={formData.image_id}
                 />
               ) : field.type === "file" ? (
                 <DeviceFileUpload
@@ -280,4 +258,4 @@ const GenericModal = ({
   );
 };
 
-export default GenericModal;
+export default MosqueModal;

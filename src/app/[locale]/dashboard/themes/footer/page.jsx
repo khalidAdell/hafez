@@ -1,78 +1,263 @@
 "use client";
 
-import React, { useState } from "react";
-import DashboardPath from "../../../../../components/dashboard/DashboardPath";
-import FileUploadArea from "../../../../../components/FileUploadArea";
-import SaveCancelButtons from "../../../../../components/SaveCancelButtons";
-import { FiImage, FiMapPin, FiPhone, FiMail } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "react-toastify";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import DashboardPath from "../../../../../components/dashboard/DashboardPath";
+import CustomFilePicker from "../../../../../components/CustomFilePicker";
+import SaveCancelButtons from "../../../../../components/SaveCancelButtons";
+import GlobalToast from "../../../../../components/GlobalToast";
+import { usePathname } from "next/navigation";
+
+// Placeholder API functions (replace with actual implementations)
+const fetchFooterSettings = async ({}, locale) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Accept", "application/json");
+  myHeaders.append("Accept-Language", locale);
+  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
+
+  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/footer", {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  });
+  return response.json();
+};
+
+const updateFooterSettings = async (settingsData, locale) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Accept", "application/json");
+  myHeaders.append("Accept-Language", locale);
+  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
+
+  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/footer", {
+    method: "POST",
+    headers: myHeaders,
+    body: settingsData,
+    redirect: "follow",
+  });
+  return response.json();
+};
+
+const fetchContactSettings = async ({}, locale) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Accept", "application/json");
+  myHeaders.append("Accept-Language", locale);
+  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
+
+  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/contact", {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  });
+  return response.json();
+};
+
+const updateContactSettings = async (settingsData, locale) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Accept", "application/json");
+  myHeaders.append("Accept-Language", locale);
+  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
+
+  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/contact", {
+    method: "POST",
+    headers: myHeaders,
+    body: settingsData,
+    redirect: "follow",
+  });
+  return response.json();
+};
 
 const FooterPage = () => {
-  const [activeTab, setActiveTab] = useState("about");
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] || "ar";
   const t = useTranslations();
-
-  const [aboutText, setAboutText] = useState("");
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("footer");
   const [footerLogo, setFooterLogo] = useState(null);
-  const [playStoreLink, setPlayStoreLink] = useState("");
-  const [appStoreLink, setAppStoreLink] = useState("");
-
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [address, setAddress] = useState("");
-  const [email, setEmail] = useState("");
-  const [mapLink, setMapLink] = useState("");
+  const [about, setAbout] = useState("");
+  const [playApp, setPlayApp] = useState("");
+  const [appleApp, setAppleApp] = useState("");
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: "",
+    instagram: "",
+    twitter: "",
+    youtube: "",
+    linkedin: "",
+  });
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactAddress, setContactAddress] = useState("");
+  const [contactMail, setContactMail] = useState("");
+  const [contactLocation, setContactLocation] = useState("");
   const [workingHours, setWorkingHours] = useState("");
+  const [error, setError] = useState(null);
 
-  const handleFileChange = (e, setter) => {
-    const file = e.target.files[0];
-    if (file) {
-      setter(URL.createObjectURL(file));
+  // Fetch footer settings
+  const { data: footerSettings = {}, error: footerError } = useQuery({
+    queryKey: ["footerSettings", locale],
+    queryFn: () => fetchFooterSettings({}, locale).then((res) => res.data),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  // Fetch contact settings
+  const { data: contactSettings = {}, error: contactError } = useQuery({
+    queryKey: ["contactSettings", locale],
+    queryFn: () => fetchContactSettings({}, locale).then((res) => res.data),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  // Handle footer settings error
+  useEffect(() => {
+    if (footerError) {
+      const errorMessage = footerError?.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    } else {
+      setError(null);
+    }
+  }, [footerError, t]);
+
+  // Handle contact settings error
+  useEffect(() => {
+    if (contactError) {
+      const errorMessage = contactError?.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    } else {
+      setError(null);
+    }
+  }, [contactError, t]);
+
+  // Initialize footer settings
+  useEffect(() => {
+    if (footerSettings) {
+      setFooterLogo(footerSettings.footer_logo ? `${footerSettings.footer_logo}` : null);
+      setAbout(footerSettings.about || "");
+      setPlayApp(footerSettings.play_app || "");
+      setAppleApp(footerSettings.apple_app || "");
+      setSocialLinks({
+        facebook: footerSettings.social_links?.facebook || "",
+        instagram: footerSettings.social_links?.instagram || "",
+        twitter: footerSettings.social_links?.twitter || "",
+        youtube: footerSettings.social_links?.youtube || "",
+        linkedin: footerSettings.social_links?.linkedin || "",
+      });
+    }
+  }, [footerSettings]);
+
+  // Initialize contact settings
+  useEffect(() => {
+    if (contactSettings) {
+      setContactPhone(contactSettings.contact_phone || "");
+      setContactAddress(contactSettings.contact_address || "");
+      setContactMail(contactSettings.contact_mail || "");
+      setContactLocation(contactSettings.contact_location || "");
+      setWorkingHours(contactSettings.working_hours || "");
+    }
+  }, [contactSettings]);
+
+  // Update footer settings mutation
+  const updateFooterMutation = useMutation({
+    mutationFn: (settingsData) => updateFooterSettings(settingsData, locale),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["footerSettings", locale]);
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
+    },
+    onError: (err) => {
+      const errorMessage = err.response?.data?.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    },
+  });
+
+  // Update contact settings mutation
+  const updateContactMutation = useMutation({
+    mutationFn: (settingsData) => updateContactSettings(settingsData, locale),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["contactSettings", locale]);
+      toast.success(t("updated_successfully"), { autoClose: 3000 });
+    },
+    onError: (err) => {
+      const errorMessage = err.response?.data?.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    },
+  });
+
+  // Handle file change for footer logo
+  const handleFileChange = (name, file, imageId) => {
+    if (name === "footer_logo") {
+      setFooterLogo(imageId);
     }
   };
 
-  const handleSaveAbout = () => {
-    console.log({ aboutText, footerLogo, playStoreLink, appStoreLink });
+  // Handle save footer settings
+  const handleSaveFooter = () => {
+    const formData = new FormData();
+    formData.append("footer_logo", footerLogo);
+    formData.append("about", about);
+    formData.append("play_app", playApp);
+    formData.append("apple_app", appleApp);
+    Object.keys(socialLinks).forEach((key) => {
+      formData.append(`social_links[${key}]`, socialLinks[key]);
+    });
+    updateFooterMutation.mutate(formData);
   };
 
-  const handleCancelAbout = () => {
-    setAboutText("");
-    setFooterLogo(null);
-    setPlayStoreLink("");
-    setAppStoreLink("");
-  };
-
+  // Handle save contact settings
   const handleSaveContact = () => {
-    console.log({ phoneNumber, address, email, mapLink, workingHours });
+    const formData = new FormData();
+    formData.append("contact_phone", contactPhone);
+    formData.append("contact_address", contactAddress);
+    formData.append("contact_mail", contactMail);
+    formData.append("contact_location", contactLocation);
+    formData.append("working_hours", workingHours);
+    updateContactMutation.mutate(formData);
   };
 
+  // Handle cancel footer settings
+  const handleCancelFooter = () => {
+    setFooterLogo(footerSettings?.footer_logo ? `${footerSettings.footer_logo}` : null);
+    setAbout(footerSettings?.about || "");
+    setPlayApp(footerSettings?.play_app || "");
+    setAppleApp(footerSettings?.apple_app || "");
+    setSocialLinks({
+      facebook: footerSettings?.social_links?.facebook || "",
+      instagram: footerSettings?.social_links?.instagram || "",
+      twitter: footerSettings?.social_links?.twitter || "",
+      youtube: footerSettings?.social_links?.youtube || "",
+      linkedin: footerSettings?.social_links?.linkedin || "",
+    });
+  };
+
+  // Handle cancel contact settings
   const handleCancelContact = () => {
-    setPhoneNumber("");
-    setAddress("");
-    setEmail("");
-    setMapLink("");
-    setWorkingHours("");
+    setContactPhone(contactSettings?.contact_phone || "");
+    setContactAddress(contactSettings?.contact_address || "");
+    setContactMail(contactSettings?.contact_mail || "");
+    setContactLocation(contactSettings?.contact_location || "");
+    setWorkingHours(contactSettings?.working_hours || "");
   };
 
   return (
-    <div>
-      <DashboardPath
-        pageTitle={t("footer")}
-        backUrl="/dashboard"
-        addUrl="/dashboard/themes/footer/add"
-      />
-
+    <div className="p-8 max-w-7xl mx-auto">
+      <GlobalToast />
+      <DashboardPath pageTitle={t("footer")} backUrl={`/${locale}/dashboard`} />
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <div className="p-4">
         {/* Tabs */}
         <nav className="mb-6">
           <div className="flex border-b border-gray-300">
             <button
               className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                activeTab === "about"
+                activeTab === "footer"
                   ? "border-b-2 border-[#0B7459] text-[#0B7459]"
                   : "text-gray-600 hover:text-[#096a4d]"
               }`}
-              onClick={() => setActiveTab("about")}
+              onClick={() => setActiveTab("footer")}
             >
-              {t("tab_about")}
+              {t("footer")}
             </button>
             <button
               className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
@@ -82,136 +267,132 @@ const FooterPage = () => {
               }`}
               onClick={() => setActiveTab("contact")}
             >
-              {t("tab_contact")}
+              {t("contact")}
             </button>
           </div>
         </nav>
 
-        {/* About Us Tab */}
-        {activeTab === "about" && (
-          <div className="bg-gray-50 shadow-sm rounded-lg p-6 space-y-6">
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">
-                {t("about_text_label")}
-              </label>
-              <textarea
-                value={aboutText}
-                onChange={(e) => setAboutText(e.target.value)}
-                rows={4}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-                placeholder={t("about_text_placeholder")}
-              />
+        {/* Footer Settings */}
+        {activeTab === "footer" && (
+          <div className="bg-gray-50 shadow-sm rounded-lg p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h2>{t("footer_logo")}</h2>
+                <CustomFilePicker
+                  name="footer_logo"
+                  onFileChange={handleFileChange}
+                  locale={locale}
+                  imageId={footerLogo}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("about")}</label>
+                <textarea
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  rows="4"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("play_app")}</label>
+                <input
+                  type="text"
+                  value={playApp}
+                  onChange={(e) => setPlayApp(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  placeholder="https://play.google.com/..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("apple_app")}</label>
+                <input
+                  type="text"
+                  value={appleApp}
+                  onChange={(e) => setAppleApp(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  placeholder="https://www.apple.com/app-store/..."
+                />
+              </div>
+              <div className="md:col-span-2">
+                <h2 className="text-lg font-medium mb-4">{t("social_links")}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.keys(socialLinks).map((key) => (
+                    <div key={key}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">{t(key)}</label>
+                      <input
+                        type="text"
+                        value={socialLinks[key]}
+                        onChange={(e) =>
+                          setSocialLinks((prev) => ({ ...prev, [key]: e.target.value }))
+                        }
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                        placeholder={`https://${key}.com/...`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-
-            <FileUploadArea
-              label={t("footer_logo")}
-              icon={FiImage}
-              file={footerLogo}
-              onChange={(e) => handleFileChange(e, setFooterLogo)}
-              previewSize="w-32 h-32"
-            />
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                {t("playstore_link_label")}
-              </label>
-              <input
-                type="text"
-                value={playStoreLink}
-                onChange={(e) => setPlayStoreLink(e.target.value)}
-                placeholder={t("playstore_link_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                {t("appstore_link_label")}
-              </label>
-              <input
-                type="text"
-                value={appStoreLink}
-                onChange={(e) => setAppStoreLink(e.target.value)}
-                placeholder={t("appstore_link_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
-            </div>
-
-            <SaveCancelButtons onSave={handleSaveAbout} onCancel={handleCancelAbout} />
+            <SaveCancelButtons onSave={handleSaveFooter} onCancel={handleCancelFooter} />
           </div>
         )}
 
-        {/* Contact Info Tab */}
+        {/* Contact Settings */}
         {activeTab === "contact" && (
-          <div className="bg-gray-50 shadow-sm rounded-lg p-6 space-y-6">
-            <div>
-              <label className=" mb-1 font-medium text-gray-700 flex items-center gap-2">
-                <FiPhone />
-                {t("phone_label")}
-              </label>
-              <input
-                type="text"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder={t("phone_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
+          <div className="bg-gray-50 shadow-sm rounded-lg p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("contact_phone")}</label>
+                <input
+                  type="text"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  placeholder="0123456789"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("contact_address")}</label>
+                <input
+                  type="text"
+                  value={contactAddress}
+                  onChange={(e) => setContactAddress(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  placeholder={t("address_placeholder")}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("contact_mail")}</label>
+                <input
+                  type="email"
+                  value={contactMail}
+                  onChange={(e) => setContactMail(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  placeholder="example@domain.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("contact_location")}</label>
+                <input
+                  type="text"
+                  value={contactLocation}
+                  onChange={(e) => setContactLocation(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  placeholder="https://maps.google.com/..."
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("working_hours")}</label>
+                <textarea
+                  value={workingHours}
+                  onChange={(e) => setWorkingHours(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
+                  rows="4"
+                  placeholder={t("working_hours_placeholder")}
+                />
+              </div>
             </div>
-
-            <div>
-              <label className=" mb-1 font-medium text-gray-700 flex items-center gap-2">
-                <FiMapPin />
-                {t("address_label")}
-              </label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder={t("address_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
-            </div>
-
-            <div>
-              <label className=" mb-1 font-medium text-gray-700 flex items-center gap-2">
-                <FiMail />
-                {t("email_label")}
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("email_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                {t("map_link_label")}
-              </label>
-              <input
-                type="text"
-                value={mapLink}
-                onChange={(e) => setMapLink(e.target.value)}
-                placeholder={t("map_link_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                {t("working_hours_label")}
-              </label>
-              <textarea
-                value={workingHours}
-                onChange={(e) => setWorkingHours(e.target.value)}
-                rows={3}
-                placeholder={t("working_hours_placeholder")}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
-              />
-            </div>
-
             <SaveCancelButtons onSave={handleSaveContact} onCancel={handleCancelContact} />
           </div>
         )}

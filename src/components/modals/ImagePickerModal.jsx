@@ -1,16 +1,10 @@
 import React from "react";
 import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
-import { fetchFiles } from "../../lib/api";
 
-const ImagePickerModal = ({ isOpen, onClose, onSelect, locale }) => {
+
+const ImagePickerModal = ({ isOpen, onClose, onSelect, locale,images,isLoading,error }) => {
   const t = useTranslations();
 
-  const { data: images = [], isLoading, error } = useQuery({
-    queryKey: ["images", locale],
-    queryFn: () => fetchFiles({ type: "image" }, locale).then((res) => res),
-    staleTime: 5 * 60 * 1000,
-  });
 
   if (!isOpen) return null;
 

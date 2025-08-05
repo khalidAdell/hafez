@@ -6,7 +6,7 @@ export const fetchUsers = async (params = {}, locale = "ar") => {
     const axiosInstance = createDashboardAxios(locale);
     const response = await axiosInstance.get("/admin/users", { params });
     if (response.data.success) {
-      return response.data.data;
+      return response.data;
     } else {
       throw new Error(response.data.message || "فشل جلب بيانات المستخدمين");
     }
@@ -33,22 +33,18 @@ export const addUser = async (userData, locale = "ar") => {
   } catch (error) {
     console.error(
       "خطأ في إضافة المستخدم:",
-      error.response?.data?.message || error.message
+      error.response?.data || error.message
     );
     throw error;
   }
 };
 
-export const updateUser = async (userId, userData, locale = "ar") => {
+export const updateUser = async ({ id, userData }, locale = "ar") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.post(
-      `/admin/users/${userId}`,
-      userData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
+    const response = await axiosInstance.post(`/admin/users/${id}`, userData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     if (response.data.success) {
       return response.data.data;
     } else {
@@ -57,7 +53,7 @@ export const updateUser = async (userId, userData, locale = "ar") => {
   } catch (error) {
     console.error(
       "خطأ في تعديل المستخدم:",
-      error.response?.data?.message || error.message
+      error.response?.data || error.message
     );
     throw error;
   }
@@ -77,6 +73,48 @@ export const deleteUser = async (userId, locale = "ar") => {
       "خطأ في حذف المستخدم:",
       error.response?.data?.message || error.message
     );
+    throw error;
+  }
+  }
+  
+export const importUsers = async (formData, locale = "ar") => {
+    try {
+      const axiosInstance = createDashboardAxios(locale);
+      const response = await axiosInstance.post(`/admin/users/import`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Explicitly set for clarity, though Axios may set it automatically
+        },
+      });
+  
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(
+          response.data.message || "فشل استيراد المستخدمين"
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "فشل استيراد المستخدمين";
+      const errorDetails = error.response?.data?.data
+        ? Object.entries(error.response.data.data)
+            .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
+            .join(" | ")
+        : "";
+      console.error("Import users error:", errorMessage, errorDetails);
+      throw new Error(errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage);
+    }
+  };
+export const fetchFailedLogins = async (locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/users/failed-attempts`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات المحاولات الفاشلة");
+    }
+  } catch (error) {
     throw error;
   }
 };
@@ -111,7 +149,6 @@ export const addCity = async (cityData, locale = "ar") => {
     }
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post("/admin/cities", formData, {
@@ -144,7 +181,6 @@ export const updateCity = async (id, cityData, locale = "ar") => {
     formData.append("_method", "PUT");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(`/admin/cities/${id}`, formData, {
@@ -207,7 +243,8 @@ export const fetchDistricts = async (cityId = "", locale = "ar") => {
       params: { city_id: cityId },
     });
     if (response.data.success) {
-      return response.data.data.data;
+      const data = response.data.data?.data || [];
+      return Array.isArray(data) ? data : [];
     } else {
       throw new Error(response.data.message || "فشل جلب بيانات الأحياء");
     }
@@ -230,7 +267,6 @@ export const addDistrict = async (districtData, locale = "ar") => {
     formData.append("city_id", districtData.get("city_id") || "");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post("/admin/districts", formData, {
@@ -258,7 +294,6 @@ export const updateDistrict = async (id, districtData, locale = "ar") => {
     formData.append("_method", "PUT");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(
@@ -329,6 +364,23 @@ export const fetchAssociations = async (params = {}, locale = "ar") => {
   } catch (error) {
     console.error(
       "خطأ في جلب الجمعيات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchAssociationById = async (associationId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/associations/${associationId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الجمعية");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الجمعية:",
       error.response?.data?.message || error.message
     );
     throw error;
@@ -419,6 +471,23 @@ export const fetchMosques = async (params = {}, locale = "ar") => {
   } catch (error) {
     console.error(
       "خطأ في جلب المساجد:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchMosqueById = async (mosqueId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/mosques/${mosqueId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات المسجد");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب المسجد:",
       error.response?.data?.message || error.message
     );
     throw error;
@@ -671,7 +740,6 @@ export const addStudyLevel = async (studyLevelData, locale = "ar") => {
     formData.append("status", studyLevelData.get("status") || "active");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post("/admin/study-levels", formData, {
@@ -704,7 +772,6 @@ export const updateStudyLevel = async (
     formData.append("_method", "PUT");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(
@@ -795,7 +862,6 @@ export const addStatus = async (statusData, locale = "ar") => {
     formData.append("status", statusData.get("status") || "active");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post("/admin/statuses", formData, {
@@ -825,7 +891,6 @@ export const updateStatus = async ({ id, statusData }, locale = "ar") => {
     formData.append("_method", "PUT");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(
@@ -916,7 +981,6 @@ export const addFaq = async (faqData, locale = "ar") => {
     formData.append("status", faqData.get("status") || "active");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post("/admin/faqs", formData, {
@@ -947,7 +1011,6 @@ export const updateFaq = async ({ id, faqData }, locale = "ar") => {
     formData.append("_method", "PUT");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(`/admin/faqs/${id}`, formData, {
@@ -1032,7 +1095,6 @@ export const addBlogSection = async (blogSectionData, locale = "ar") => {
     formData.append("status", blogSectionData.get("status") || "active");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(
@@ -1069,7 +1131,6 @@ export const updateBlogSection = async (
     formData.append("_method", "PUT");
 
     for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
     }
 
     const response = await axiosInstance.post(
@@ -1132,3 +1193,812 @@ export const fetchBlogSectionById = async (blogSectionId, locale = "ar") => {
     throw error;
   }
 };
+
+// Blog API Functions
+export const fetchBlogs = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/blogs", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات المدونات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب المدونات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addBlog = async (blogData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/blogs", blogData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة المدونة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة المدونة:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateBlog = async ({ id, blogData }, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/admin/blogs/${id}`, blogData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل المدونة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في تعديل المدونة:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const deleteBlog = async (blogId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/blogs/${blogId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف المدونة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في حذف المدونة:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchBlogById = async (blogId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/blogs/${blogId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات المدونة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب بيانات المدونة:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+
+// Gallery Section API Functions
+export const fetchGallerySections = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/gallery-sections", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات أقسام المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب أقسام المعرض:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addGallerySection = async (gallerySectionData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/gallery-sections", gallerySectionData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة قسم المعرض:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateGallerySection = async ( id, gallerySectionData , locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/admin/gallery-sections/${id}`, gallerySectionData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في تعديل قسم المعرض:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const deleteGallerySection = async (gallerySectionId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/gallery-sections/${gallerySectionId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في حذف قسم المعرض:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchGallerySectionById = async (gallerySectionId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/gallery-sections/${gallerySectionId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب بيانات قسم المعرض:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+
+
+// Gallery API Functions
+export const fetchGallery = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/gallery", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات أقسام المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب أقسام المعرض:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addGallery = async (galleryData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/gallery", galleryData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة قسم المعرض:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateGallery = async (id, galleryData , locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/admin/gallery/${id}`, galleryData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في تعديل قسم المعرض:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const deleteGallery = async (galleryId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/gallery/${galleryId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في حذف قسم المعرض:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchGalleryById = async (galleryId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/gallery/${galleryId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات قسم المعرض");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب بيانات قسم المعرض:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+
+
+
+// Services API Functions
+export const fetchServices = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/services", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات خدمات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب خدمات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addService = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/services", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة خدمات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة خدمات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateService = async (id, serviceData , locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/admin/services/${id}`, serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل خدمات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في تعديل خدمات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const deleteService = async (serviceId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/services/${serviceId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف خدمات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في حذف خدمات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchServiceById = async (serviceId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/services/${serviceId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات خدمات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب بيانات خدمات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+
+
+
+// Header Settings API Functions
+export const fetchHeaderSettings = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/appearance-settings/header", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateHeaderSettings = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/appearance-settings/header", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+ 
+
+
+// Sliders Settings API Functions
+export const fetchSlidersSettings = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/appearance-settings/sliders", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateSlidersSettings = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/appearance-settings/sliders", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+//TimeTables Functions
+
+export const fetchTimeTables = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/time-tables", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الجداول الزمنية");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الجداول الزمنية:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchTimeTablesById = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/time-tables/${params.id}`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الجدول الزمني");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الجدول الزمني:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+ 
+
+// Footer Settings API Functions
+export const fetchFooterSettings = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/appearance-settings/footer", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateFooterSettings = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/appearance-settings/footer", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+
+
+// Contact Settings API Functions
+export const fetchContactSettings = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/appearance-settings/contact", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateContactSettings = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/appearance-settings/contact", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+
+
+
+// Settings Meta API Functions
+export const fetchMetaSetting = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/appearance-settings/meta", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateMetaSetting = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/appearance-settings/meta", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+// Settings Cookies API Functions
+export const fetchCookiesSetting = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/appearance-settings/cookies", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateCookiesSetting = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/appearance-settings/cookies", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+// General Settings API Functions
+export const fetchGeneralSetting = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/general-settings", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateGeneralSetting = async (serviceData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/general-settings", serviceData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة بيانات:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+
+
+
+// Profile API Functions
+export const fetchProfile = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/me", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateProfile = async (profileData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/me", profileData);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل تحديث بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateProfilePassword = async (profilePasswordData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/me/change-password", profilePasswordData);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل تحديث بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const currentDeviceLogout = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/me/logout/current", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل تسجيل الخروج");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const otherDevicesLogout = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/me/logout/others", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل تسجيل الخروج");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const allDevicesLogout = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/me/logout/all", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل تسجيل الخروج");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+

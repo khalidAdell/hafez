@@ -91,9 +91,7 @@ const DistrictsPage = () => {
       let errorMessage = response?.message || t("error");
 
       if (response?.data && typeof response.data === "object") {
-        const fieldErrors = Object.values(response.data)
-          .flat()
-          .join(" | ");
+        const fieldErrors = Object.values(response.data).flat().join(" | ");
         errorMessage += ` - ${fieldErrors}`;
       }
 
@@ -103,7 +101,8 @@ const DistrictsPage = () => {
   });
 
   const updateDistrictMutation = useMutation({
-    mutationFn: ({ id, districtData }) => updateDistrict(id, districtData, locale),
+    mutationFn: ({ id, districtData }) =>
+      updateDistrict(id, districtData, locale),
     onSuccess: (data) => {
       setIsEditModalOpen(false);
       queryClient.invalidateQueries(["districts", filters.city_id, locale]);
@@ -116,9 +115,7 @@ const DistrictsPage = () => {
       let errorMessage = response?.message || t("error_updating_district");
 
       if (response?.data && typeof response.data === "object") {
-        const fieldErrors = Object.values(response.data)
-          .flat()
-          .join(" | ");
+        const fieldErrors = Object.values(response.data).flat().join(" | ");
         errorMessage += ` - ${fieldErrors}`;
       }
 
@@ -135,8 +132,7 @@ const DistrictsPage = () => {
       toast.success(t("deleted_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage =
-        err.response?.data?.message || t("error");
+      const errorMessage = err.response?.data?.message || t("error");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
@@ -340,7 +336,7 @@ const DistrictsPage = () => {
         onSubmit={(data) => addDistrictMutation.mutate(data)}
         initialData={{ status: "active", city_id: "" }}
         fieldsConfig={fieldsConfig}
-        fetchDependencies={{}} 
+        fetchDependencies={{}}
         locale={locale}
       />
 
@@ -348,7 +344,10 @@ const DistrictsPage = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={(data) =>
-          updateDistrictMutation.mutate({ id: selectedDistrict.id, districtData: data })
+          updateDistrictMutation.mutate({
+            id: selectedDistrict.id,
+            districtData: data,
+          })
         }
         initialData={{
           name_ar: selectedDistrict?.name_ar || "",

@@ -18,3 +18,7 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+button {
+  cursor: pointer;
+}

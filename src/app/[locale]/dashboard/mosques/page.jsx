@@ -9,10 +9,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardHeader from "../../../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../../../components/dashboard/DashboardTable";
 import CustomActions from "../../../../components/modals/CustomActions";
-import GenericModal from "../../../../components/modals/GenericModal";
+import MosqueModal from "./MosqueModal";
 import DeleteModal from "../../../../components/modals/DeleteModal";
 import GlobalToast from "../../../../components/GlobalToast";
-import { fetchMosques, addMosque, updateMosque, deleteMosque, fetchCities, fetchDistricts, fetchAssociations } from "../../../../lib/api";
+import {
+  fetchMosques,
+  addMosque,
+  updateMosque,
+  deleteMosque,
+  fetchCities,
+  fetchDistricts,
+  fetchAssociations,
+  fetchUsers,
+} from "../../../../lib/api";
 import { usePathname } from "next/navigation";
 
 const MosquesPage = () => {
@@ -41,54 +50,61 @@ const MosquesPage = () => {
   const { data: cities = [], error: citiesError } = useQuery({
     queryKey: ["cities", locale],
     queryFn: () => {
-      console.log(`Fetching cities for locale: ${locale}`);
-      return fetchCities(locale);
+      return fetchCities({}, locale);
     },
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: associations = [], error: associationsError } = useQuery({
-    queryKey: ["associations", locale],
-    queryFn: () => {
-      console.log(`Fetching associations for locale: ${locale}`);
-      return fetchAssociations({}, locale).then((res) => res.data.data);
-    },
-    staleTime: 5 * 60 * 1000,
-  });
 
   const { data: districts = [], error: districtsError } = useQuery({
     queryKey: ["districts", filters.city_id, locale],
     queryFn: () => {
-      console.log(`Fetching districts for city_id: ${filters.city_id}, locale: ${locale}`);
       return fetchDistricts(filters.city_id, locale);
     },
     enabled: !!filters.city_id,
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: associations = [], error: associationsError } = useQuery({
+    queryKey: ["associations", locale],
+    queryFn: () => {
+      return fetchAssociations({city_id: filters.city_id,district_id: filters.district_id}, locale).then((res) => res.data.data);
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: !!filters.district_id,
+  });
+
   const { data: mosques = [], error: mosquesError } = useQuery({
     queryKey: ["mosques", filters, locale],
     queryFn: () => {
-      console.log(`Fetching mosques with filters:`, filters);
       return fetchMosques(filters, locale).then((res) => res.data.data);
     },
     staleTime: 1 * 60 * 1000,
   });
 
+  const { data: teachers = [], error: teachersError } = useQuery({
+    queryKey: ["users", locale],
+    queryFn: () => {
+      return fetchUsers({ ...filters, type: "teacher" }, locale).then((res) => res.data.data);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
-    if (citiesError || associationsError || districtsError || mosquesError) {
+    if (citiesError || associationsError || districtsError || mosquesError || teachersError) {
       const errorMessage =
         citiesError?.message ||
         associationsError?.message ||
         districtsError?.message ||
         mosquesError?.message ||
+        teachersError?.message ||
         t("error_loading_data");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     } else {
       setError(null);
     }
-  }, [citiesError, associationsError, districtsError, mosquesError, t]);
+  }, [citiesError, associationsError, districtsError, mosquesError, teachersError, t]);
 
   const addMosqueMutation = useMutation({
     mutationFn: (mosqueData) => addMosque(mosqueData, locale),
@@ -98,7 +114,8 @@ const MosquesPage = () => {
       toast.success(t("mosque_added_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_adding_mosque");
+      const errorMessage =
+        err.response?.data?.message || t("error_adding_mosque");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
@@ -112,7 +129,8 @@ const MosquesPage = () => {
       toast.success(t("mosque_updated_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_updating_mosque");
+      const errorMessage =
+        err.response?.data?.message || t("error_updating_mosque");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
@@ -126,7 +144,8 @@ const MosquesPage = () => {
       toast.success(t("mosque_deleted_successfully"), { autoClose: 3000 });
     },
     onError: (err) => {
-      const errorMessage = err.response?.data?.message || t("error_deleting_mosque");
+      const errorMessage =
+        err.response?.data?.message || t("error_deleting_mosque");
       setError(errorMessage);
       toast.error(errorMessage, { autoClose: 3000 });
     },
@@ -144,20 +163,30 @@ const MosquesPage = () => {
       console.log("Applying filters:", newFilters);
       const updatedFilters = { ...newFilters };
       if (newFilters.city_name) {
-        const selectedCity = cities.find((city) => city.name === newFilters.city_name);
+        const selectedCity = cities?.data?.data.find(
+          (city) => city.name === newFilters.city_name
+        );
         updatedFilters.city_id = selectedCity ? selectedCity.id : "";
       } else {
         updatedFilters.city_id = "";
       }
       if (newFilters.district_name) {
-        const selectedDistrict = districts.find((district) => district.name === newFilters.district_name);
-        updatedFilters.district_id = selectedDistrict ? selectedDistrict.id : "";
+        const selectedDistrict = districts.find(
+          (district) => district.name === newFilters.district_name
+        );
+        updatedFilters.district_id = selectedDistrict
+          ? selectedDistrict.id
+          : "";
       } else {
         updatedFilters.district_id = "";
       }
       if (newFilters.association_name) {
-        const selectedAssociation = associations.find((assoc) => assoc.name === newFilters.association_name);
-        updatedFilters.association_id = selectedAssociation ? selectedAssociation.id : "";
+        const selectedAssociation = associations.find(
+          (assoc) => assoc.name === newFilters.association_name
+        );
+        updatedFilters.association_id = selectedAssociation
+          ? selectedAssociation.id
+          : "";
       } else {
         updatedFilters.association_id = "";
       }
@@ -200,19 +229,28 @@ const MosquesPage = () => {
         name: "city_name",
         label: "city",
         type: "select",
-        options: cities.map((city) => ({ value: city.name, label: city.name })),
+        options: cities?.data?.data.map((city) => ({
+          value: city.name,
+          label: city.name,
+        })),
       },
       {
         name: "district_name",
         label: "district",
         type: "select",
-        options: districts.map((district) => ({ value: district.name, label: district.name })),
+        options: districts.map((district) => ({
+          value: district.name,
+          label: district.name,
+        })),
       },
       {
         name: "association_name",
         label: "association",
         type: "select",
-        options: associations.map((assoc) => ({ value: assoc.name, label: assoc.name })),
+        options: associations.map((assoc) => ({
+          value: assoc.name,
+          label: assoc.name,
+        })),
       },
       {
         name: "pagination",
@@ -226,7 +264,8 @@ const MosquesPage = () => {
 
   const fieldsConfig = useMemo(
     () => [
-      { name: "name", label: "mosque_name", type: "text", required: true },
+      { name: "name_ar", label: "mosque_name", type: "text", required: true },
+      { name: "name_en", label: "mosque_name_en", type: "text", required: true },
       {
         name: "status",
         label: "status",
@@ -237,30 +276,43 @@ const MosquesPage = () => {
         ],
       },
       {
-        name: "association_id",
-        label: "association",
-        type: "select",
-        options: associations.map((assoc) => ({ value: assoc.id, label: assoc.name })),
-      },
-      {
-        name: "user_id",
-        label: "responsiblemosque",
-        type: "select",
-        options: [], 
-      },
-      {
         name: "city_id",
         label: "city",
         type: "select",
-        options: cities.map((city) => ({ value: city.id, label: city.name })),
+        options: cities?.data?.data.map((city) => ({
+          value: city.id,
+          label: city.name,
+        })),
       },
       {
         name: "district_id",
         label: "district",
         type: "select",
         dependsOn: "city_id",
-        options: districts.map((district) => ({ value: district.id, label: district.name })),
+        options: districts.map((district) => ({
+          value: district.id,
+          label: district.name,
+        })),
       },
+      {
+        name: "association_id",
+        label: "association",
+        type: "select",
+        options: associations.map((assoc) => ({
+          value: assoc.id,
+          label: assoc.name,
+        })),
+      },
+      {
+        name: "user_id",
+        label: "responsiblemosque",
+        type: "select",
+        options: teachers.map((teacher)=>({
+          value: teacher.id,
+          label: teacher.name,
+        })),
+      },
+
     ],
     [cities, districts, associations]
   );
@@ -276,10 +328,11 @@ const MosquesPage = () => {
         accessor: "user",
         render: (row) => row.user?.name || "غير محدد",
       },
+
       {
-        header: t("association"),
-        accessor: "association",
-        render: (row) => row.association?.name || "غير محدد",
+        header: t("city"),
+        accessor: "district",
+        render: (row) => row.district?.city?.name || "غير محدد",
       },
       {
         header: t("district"),
@@ -287,9 +340,9 @@ const MosquesPage = () => {
         render: (row) => row.district?.name || "غير محدد",
       },
       {
-        header: t("city"),
-        accessor: "district",
-        render: (row) => row.district?.city?.name || "غير محدد",
+        header: t("association"),
+        accessor: "association",
+        render: (row) => row.association?.name || "غير محدد",
       },
       {
         header: t("status"),
@@ -297,7 +350,9 @@ const MosquesPage = () => {
         render: (row) => (
           <span
             className={`px-2 py-1 inline-flex text-sm leading-5 font-medium rounded-full ${
-              row.status === "active" || row.status === "نشط" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              row.status === "active" || row.status === "نشط"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {row.status}
@@ -341,30 +396,28 @@ const MosquesPage = () => {
           console.log("Using cached cities data");
           return cachedData;
         }
-        console.log("Fetching cities for modal");
-        return await fetchCities(locale);
+        return await fetchCities({}, locale);
       },
       district_id: async (cityId) => {
         if (!cityId) {
-          console.log("No cityId provided, returning empty districts");
           return [];
         }
-        const cachedData = queryClient.getQueryData(["districts", cityId, locale]);
+        const cachedData = queryClient.getQueryData([
+          "districts",
+          cityId,
+          locale,
+        ]);
         if (cachedData) {
-          console.log(`Using cached districts data for cityId: ${cityId}`);
           return cachedData;
         }
-        console.log(`Fetching districts for cityId: ${cityId}`);
         return await fetchDistricts(cityId, locale);
       },
-      association_id: async () => {
-        const cachedData = queryClient.getQueryData(["associations", locale]);
+      association_id: async (cityId,districtId) => {
+        const cachedData = queryClient.getQueryData(["associations",cityId,districtId, locale]);
         if (cachedData) {
-          console.log("Using cached associations data");
           return cachedData;
         }
-        console.log("Fetching associations for modal");
-        return await fetchAssociations({}, locale).then((res) => res.data.data);
+        return await fetchAssociations({city_id: cityId,district_id: districtId}, locale).then((res) => res.data.data);
       },
     }),
     [locale, queryClient]
@@ -384,16 +437,22 @@ const MosquesPage = () => {
         searchConfig={searchConfig}
         currentFilters={{
           ...filters,
-          city_name: cities.find((city) => city.id === filters.city_id)?.name || "",
-          district_name: districts.find((district) => district.id === filters.district_id)?.name || "",
-          association_name: associations.find((assoc) => assoc.id === filters.association_id)?.name || "",
+          city_name:
+            cities?.data?.data.find((city) => city.id === filters.city_id)
+              ?.name || "",
+          district_name:
+            districts.find((district) => district.id === filters.district_id)
+              ?.name || "",
+          association_name:
+            associations.find((assoc) => assoc.id === filters.association_id)
+              ?.name || "",
         }}
       />
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <center>
         <DashboardTable columns={columns} data={mosques} />
       </center>
-      <GenericModal
+      <MosqueModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={(data) => addMosqueMutation.mutate(data)}
@@ -401,10 +460,15 @@ const MosquesPage = () => {
         fieldsConfig={fieldsConfig}
         fetchDependencies={optimizedFetchDependencies}
       />
-      <GenericModal
+      <MosqueModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSubmit={(data) => updateMosqueMutation.mutate({ id: selectedMosque.id, mosqueData: data })}
+        onSubmit={(data) =>
+          updateMosqueMutation.mutate({
+            id: selectedMosque.id,
+            mosqueData: data,
+          })
+        }
         initialData={selectedMosque || {}}
         isEdit={true}
         fieldsConfig={fieldsConfig}
