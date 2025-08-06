@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchTimeTablesById } from '../../lib/api';
 import { useTranslations } from 'next-intl';
 import { X, User, Calendar, BookOpen, CheckCircle, Clock, Sparkles } from 'lucide-react';
+import { useUser } from '../../context/userContext';
 
 const DetailItem = ({ icon, label, value }) => (
   <div className="group relative overflow-hidden bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-sm border border-white/30 rounded-2xl p-5 hover:shadow-xl hover:shadow-emerald-600/10 transition-all duration-600 hover:scale-[1.02] hover:bg-gradient-to-br hover:from-emerald-50/80 hover:to-emerald-50/40">
@@ -59,10 +60,11 @@ const RecitationCard = ({ rec, index, t }) => (
 
 const DetailsModal = ({ isOpen, onClose, timetableId, locale }) => {
   const t = useTranslations();
+  const {user} = useUser();
 
   const { data: timetableData, isLoading, isError, error } = useQuery({
     queryKey: ['timetable', timetableId, locale],
-    queryFn: () => fetchTimeTablesById({ id: timetableId }, locale),
+    queryFn: () => fetchTimeTablesById({ id: timetableId }, locale, user?.type),
     enabled: !!isOpen && !!timetableId,
   });
 
@@ -154,6 +156,8 @@ const DetailsModal = ({ isOpen, onClose, timetableId, locale }) => {
                     <DetailItem icon={<BookOpen size={20} />} label={t('surah_to_readable')} value={details.surah_to_readable} />
                     <DetailItem icon={<CheckCircle size={20} />} label={t('status')} value={details.status} />
                     <DetailItem icon={<Clock size={20} />} label={t('created_at')} value={details.created_at_humanly} />
+                    <DetailItem icon={<BookOpen size={20} />} label={t('ayah_from_readable')} value={details.ayah_from_readable} />
+                    <DetailItem icon={<BookOpen size={20} />} label={t('ayah_to_readable')} value={details.ayah_to_readable} />
                   </div>
                 </section>
 

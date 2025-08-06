@@ -11,6 +11,8 @@ import CustomFilePicker from "../../../../components/CustomFilePicker";
 import SaveCancelButtons from "../../../../components/SaveCancelButtons";
 import GlobalToast from "../../../../components/GlobalToast";
 import { fetchProfile, updateProfile, updateProfilePassword, currentDeviceLogout, otherDevicesLogout, allDevicesLogout } from "../../../../lib/api";
+import { FaEye } from "react-icons/fa";
+import { useUser } from "../../../../context/userContext";
 
 const ProfilePage = () => {
   const pathname = usePathname();
@@ -21,6 +23,7 @@ const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [logoutOption, setLogoutOption] = useState("current");
   const [formData, setFormData] = useState({
     name: "",
@@ -34,11 +37,12 @@ const ProfilePage = () => {
     password_confirmation: "",
   });
   const [error, setError] = useState(null);
-
+  const { user, logout } = useUser();
+  const type = user?.type;
   // Fetch profile data
   const { data: profileData = {}, error: profileError } = useQuery({
     queryKey: ["profile", locale],
-    queryFn: () => fetchProfile({}, locale).then((res) => res.data),
+    queryFn: () => fetchProfile({}, locale,type).then((res) => res.data),
     staleTime: 1 * 60 * 1000,
   });
 
@@ -55,11 +59,11 @@ const ProfilePage = () => {
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: (profileData) => updateProfile(profileData, locale),
+    mutationFn: (profileData) => updateProfile(profileData, locale,type),
     onSuccess: (data) => {
       if (data.success) {
         queryClient.invalidateQueries(["profile", locale]);
-        toast.success(t("updated_successfully"), { autoClose: 3000 });
+        toast.success(data.message, { autoClose: 3000 });
         closeModal();
       } else {
         throw new Error(data.message || t("error"));
@@ -74,10 +78,10 @@ const ProfilePage = () => {
 
   // Update password mutation
   const updatePasswordMutation = useMutation({
-    mutationFn: (passwordData) => updateProfilePassword(passwordData, locale),
+    mutationFn: (passwordData) => updateProfilePassword(passwordData, locale,type),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(t("password_updated_successfully"), { autoClose: 3000 });
+        toast.success(data.message, { autoClose: 3000 });
         setPasswordData({ current_password: "", password: "", password_confirmation: "" });
         setIsPasswordModalOpen(false);
       } else {
@@ -93,10 +97,10 @@ const ProfilePage = () => {
 
   // Logout mutations
   const currentDeviceLogoutMutation = useMutation({
-    mutationFn: () => currentDeviceLogout({}, locale),
+    mutationFn: () => currentDeviceLogout({}, locale,type),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(t("logged_out_current_device"), { autoClose: 3000 });
+        toast.success(data.message, { autoClose: 3000 });
         router.push(`/${locale}/login`);
       } else {
         throw new Error(data.message || t("error"));
@@ -110,10 +114,10 @@ const ProfilePage = () => {
   });
 
   const otherDevicesLogoutMutation = useMutation({
-    mutationFn: () => otherDevicesLogout({}, locale),
+    mutationFn: () => otherDevicesLogout({}, locale,type),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(t("logged_out_other_devices"), { autoClose: 3000 });
+        toast.success(data.message, { autoClose: 3000 });
       } else {
         throw new Error(data.message || t("error"));
       }
@@ -126,10 +130,10 @@ const ProfilePage = () => {
   });
 
   const allDevicesLogoutMutation = useMutation({
-    mutationFn: () => allDevicesLogout({}, locale),
+    mutationFn: () => allDevicesLogout({}, locale,type),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success(t("logged_out_all_devices"), { autoClose: 3000 });
+        toast.success(data.message, { autoClose: 3000 });
         router.push(`/${locale}/login`);
       } else {
         throw new Error(data.message || t("error"));
@@ -232,6 +236,7 @@ const ProfilePage = () => {
     } else if (logoutOption === "all") {
       allDevicesLogoutMutation.mutate();
     }
+    logout();
     setIsLogoutModalOpen(false);
   }, [logoutOption, currentDeviceLogoutMutation, otherDevicesLogoutMutation, allDevicesLogoutMutation, t]);
 
@@ -357,18 +362,21 @@ const ProfilePage = () => {
                 <h3 className="text-xl font-semibold text-[#0B7459] mb-4">{t("changePassword")}</h3>
                 <label className="block mb-3">
                   <span className="text-gray-700">{t("currentPassword")}</span>
+                  <div className="relative">
                   <input
-                    type="password"
+                    type={`${passwordVisible ? "text" : "password"}`}
                     name="current_password"
                     value={passwordData.current_password}
                     onChange={handlePasswordChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#0B7459]"
                   />
+                  <FaEye onClick={() => setPasswordVisible(!passwordVisible)} className="absolute ltr:right-2 rtl:left-2 top-1/2 transform -translate-y-1/2 cursor-pointer" />
+                  </div>
                 </label>
                 <label className="block mb-3">
                   <span className="text-gray-700">{t("newPassword")}</span>
                   <input
-                    type="password"
+                    type={`${passwordVisible ? "text" : "password"}`}
                     name="password"
                     value={passwordData.password}
                     onChange={handlePasswordChange}
@@ -378,7 +386,7 @@ const ProfilePage = () => {
                 <label className="block mb-4">
                   <span className="text-gray-700">{t("confirmNewPassword")}</span>
                   <input
-                    type="password"
+                    type={`${passwordVisible ? "text" : "password"}`}
                     name="password_confirmation"
                     value={passwordData.password_confirmation}
                     onChange={handlePasswordChange}

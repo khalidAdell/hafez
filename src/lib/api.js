@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import createDashboardAxios from "./createDashboardAxios";
 
-export const fetchUsers = async (params = {}, locale = "ar") => {
+export const fetchUsers = async (params = {}, locale = "ar", type = "admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/users", { params });
+    const response = await axiosInstance.get(`${type}/users`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -82,7 +82,7 @@ export const importUsers = async (formData, locale = "ar") => {
       const axiosInstance = createDashboardAxios(locale);
       const response = await axiosInstance.post(`/admin/users/import`, formData, {
         headers: {
-          "Content-Type": "multipart/form-data", // Explicitly set for clarity, though Axios may set it automatically
+          "Content-Type": "multipart/form-data",
         },
       });
   
@@ -459,10 +459,10 @@ export const deleteAssociation = async (associationId, locale = "ar") => {
   }
 };
 
-export const fetchMosques = async (params = {}, locale = "ar") => {
+export const fetchMosques = async (params = {}, locale = "ar", type = "admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/mosques", { params });
+    const response = await axiosInstance.get(`${type}/mosques`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -556,10 +556,10 @@ export const deleteMosque = async (mosqueId, locale = "ar") => {
   }
 };
 
-export const fetchSessions = async (params = {}, locale = "ar") => {
+export const fetchSessions = async (params = {}, locale = "ar", type = "admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/sessions", { params });
+    const response = await axiosInstance.get(`${type}/sessions`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -711,10 +711,10 @@ export const uploadFile = async (formData, locale = "ar") => {
   }
 };
 
-export const fetchStudyLevels = async (params = {}, locale = "ar") => {
+export const fetchStudyLevels = async (params = {}, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/study-levels", { params });
+    const response = await axiosInstance.get(`/${type}/study-levels`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -1664,10 +1664,10 @@ export const updateSlidersSettings = async (serviceData, locale = "ar") => {
 
 //TimeTables Functions
 
-export const fetchTimeTables = async (params = {}, locale = "ar") => {
+export const fetchTimeTables = async (params = {}, locale = "ar", type = "admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/time-tables", { params });
+    const response = await axiosInstance.get(`${type}/time-tables`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -1681,10 +1681,10 @@ export const fetchTimeTables = async (params = {}, locale = "ar") => {
     throw error;
   }
 };
-export const fetchTimeTablesById = async (params = {}, locale = "ar") => {
+export const fetchTimeTablesById = async (params = {}, locale = "ar", type = "admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get(`/admin/time-tables/${params.id}`, { params });
+    const response = await axiosInstance.get(`${type}/time-tables/${params.id}`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -1699,8 +1699,218 @@ export const fetchTimeTablesById = async (params = {}, locale = "ar") => {
   }
 };
 
- 
+export const addTimeTable = async (timeTableData = {}, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`${type}/time-tables`, timeTableData);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة الجدول الزمني");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة الجدول الزمني:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
 
+export const fetchSurah = async (params = {}, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/time-tables/surahs`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات السورة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب السورة:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchAyah = async (params = {}, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/time-tables/${params.id}/ayahs`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الآية");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الآية:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+//Children Functions
+
+export const fetchChildren = async (params = {}, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/children`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الأطفال");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الأطفال:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchChildrenById = async (params = {}, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/children/${params.id}`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الطفل");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الطفل:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+//Student Functions
+
+export const fetchStudents = async (params = {}, locale = "ar", type = "teacher") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/students`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الطلاب");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الطلاب:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchStudentById = async (params = {}, locale = "ar", type = "teacher") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/students/${params.id}`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الطالب");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الطالب:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addStudent = async (userData, locale = "ar", type = "teacher") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`${type}/students`, userData);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة الطالب");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة الطالب:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+ 
+export const fetchStudentsStudyLevels = async (params = {}, locale = "ar",type="admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/${type}/students/study-levels`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(
+        response.data.message || "فشل جلب بيانات مستويات الدراسة"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب مستويات الدراسة:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const fetchStudentsParents = async (params = {}, locale = "ar",type="admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/${type}/students/parents`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(
+        response.data.message || "فشل جلب بيانات اولياء الامور"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب اولياء الامور:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const importTimeTables = async (formData, locale = "ar",type="teacher") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/${type}/time-tables/import`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(
+        response.data.message || "فشل استيراد الجداول الزمنية"
+      );
+    }
+  } catch (error) {
+    const errorMessage =
+      error.response?.data?.message || error.message || "فشل استيراد الجداول الزمنية";
+    const errorDetails = error.response?.data?.data
+      ? Object.entries(error.response.data.data)
+          .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
+          .join(" | ")
+      : "";
+    console.error("Import users error:", errorMessage, errorDetails);
+    throw new Error(errorDetails ? `${errorMessage} - ${errorDetails}` : errorMessage);
+  }
+};
 // Footer Settings API Functions
 export const fetchFooterSettings = async (params = {}, locale = "ar") => {
   try {
@@ -1900,10 +2110,10 @@ export const updateGeneralSetting = async (serviceData, locale = "ar") => {
 
 
 // Profile API Functions
-export const fetchProfile = async (params = {}, locale = "ar") => {
+export const fetchProfile = async (params = {}, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/me", { params });
+    const response = await axiosInstance.get(`${type}/me`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -1917,10 +2127,10 @@ export const fetchProfile = async (params = {}, locale = "ar") => {
   }
 };
 
-export const updateProfile = async (profileData, locale = "ar") => {
+export const updateProfile = async (profileData, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.post("/admin/me", profileData);
+    const response = await axiosInstance.post(`${type}/me`, profileData);
     if (response.data.success) {
       return response.data;
     } else {
@@ -1934,10 +2144,10 @@ export const updateProfile = async (profileData, locale = "ar") => {
   }
 };
 
-export const updateProfilePassword = async (profilePasswordData, locale = "ar") => {
+export const updateProfilePassword = async (profilePasswordData, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.post("/admin/me/change-password", profilePasswordData);
+    const response = await axiosInstance.post(`${type}/me/change-password`, profilePasswordData);
     if (response.data.success) {
       return response.data;
     } else {
@@ -1951,10 +2161,10 @@ export const updateProfilePassword = async (profilePasswordData, locale = "ar") 
   }
 };
 
-export const currentDeviceLogout = async (params = {}, locale = "ar") => {
+export const currentDeviceLogout = async (params = {}, locale = "ar",type) => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/me/logout/current", { params });
+    const response = await axiosInstance.get(`${type}/me/logout/current`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -1968,10 +2178,10 @@ export const currentDeviceLogout = async (params = {}, locale = "ar") => {
   }
 };
 
-export const otherDevicesLogout = async (params = {}, locale = "ar") => {
+export const otherDevicesLogout = async (params = {}, locale = "ar",type) => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/me/logout/others", { params });
+    const response = await axiosInstance.get(`${type}/me/logout/others`, { params });
     if (response.data.success) {
       return response.data;
     } else {
@@ -1985,10 +2195,10 @@ export const otherDevicesLogout = async (params = {}, locale = "ar") => {
   }
 };
 
-export const allDevicesLogout = async (params = {}, locale = "ar") => {
+export const allDevicesLogout = async (params = {}, locale = "ar",type) => {
   try {
     const axiosInstance = createDashboardAxios(locale);
-    const response = await axiosInstance.get("/admin/me/logout/all", { params });
+    const response = await axiosInstance.get(`${type}/me/logout/all`, { params });
     if (response.data.success) {
       return response.data;
     } else {

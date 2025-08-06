@@ -121,6 +121,7 @@ export default function DashboardHeader({
   onAdd,
   onSearch,
   onFilter,
+  showAddButton = true,
   onResetFilters,
   filterConfig = [],
   searchConfig = { field: "search", placeholder: "search" },
@@ -200,13 +201,15 @@ export default function DashboardHeader({
                 <IoAdd className="h-5 w-5" />
                 <span>{t("add")}</span>
               </Link>
-            ) : (
+            ) : (showAddButton && 
               <button
                 onClick={onAdd}
                 className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#0B7459] text-white px-4 py-2 rounded-lg hover:bg-[#096a4d] transition-colors text-sm sm:text-base"
               >
-                <IoAdd className="h-5 w-5" />
-                <span>{t("add")}</span>
+                  <>
+                    <IoAdd className="h-5 w-5" />
+                    <span>{t("add")}</span>
+                  </>
               </button>
             )}
           </div>

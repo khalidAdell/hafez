@@ -12,36 +12,8 @@ import { usePathname } from "next/navigation";
 import { FiGlobe, FiClock, FiMessageSquare } from "react-icons/fi";
 import { MdLanguage, MdPowerSettingsNew, MdSettings } from "react-icons/md";
 import { BsToggleOn, BsToggleOff } from "react-icons/bs";
+import { fetchGeneralSetting, updateGeneralSetting } from "../../../../lib/api";
 
-// API functions
-const fetchGeneralSetting = async ({}, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/general-settings", {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const updateGeneralSetting = async (settingsData, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/general-settings", {
-    method: "POST",
-    headers: myHeaders,
-    body: settingsData,
-    redirect: "follow",
-  });
-  return response.json();
-};
 
 const SettingsPage = () => {
   const pathname = usePathname();

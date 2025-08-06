@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FaChevronDown,
   FaUserCircle,
@@ -14,14 +14,24 @@ import {
 import { getDashboardLinks } from "./dashboardLinks";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { fetchProfile, currentDeviceLogout, otherDevicesLogout, allDevicesLogout } from "../../lib/api";
+import { useUser } from "../../context/userContext";
+import { toast } from "react-toastify";
+import SaveCancelButtons from "../SaveCancelButtons";
+
 
 export default function DashboardNavbar({ locale }) {
   const router = useRouter();
+  const {user, logout} = useUser();
 
   const [openMenu, setOpenMenu] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [logoutOption, setLogoutOption] = useState("current");
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState(""); // Controlled input
 
   const t = useTranslations();
@@ -36,6 +46,90 @@ export default function DashboardNavbar({ locale }) {
     setUserMenuOpen(false);
     setLangDropdownOpen(false);
   };
+  
+
+  const { data: profileData = {}, error: profileError } = useQuery({
+    queryKey: ["profile", locale],
+    queryFn: () => fetchProfile({}, locale, user?.type).then((res) => res.data),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  // Logout mutations
+  const currentDeviceLogoutMutation = useMutation({
+    mutationFn: () => currentDeviceLogout({}, locale, user?.type),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(data.message, { autoClose: 3000 });
+        router.push(`/${locale}/login`);
+      } else {
+        throw new Error(data.message || t("error"));
+      }
+    },
+    onError: (err) => {
+      const errorMessage = err.response?.data?.message || err.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    },
+  });
+
+  const otherDevicesLogoutMutation = useMutation({
+    mutationFn: () => otherDevicesLogout({}, locale, user?.type),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(data.message, { autoClose: 3000 });
+      } else {
+        throw new Error(data.message || t("error"));
+      }
+    },
+    onError: (err) => {
+      const errorMessage = err.response?.data?.message || err.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    },
+  });
+
+  const allDevicesLogoutMutation = useMutation({
+    mutationFn: () => allDevicesLogout({}, locale, user?.type),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(data.message, { autoClose: 3000 });
+        router.push(`/${locale}/login`);
+      } else {
+        throw new Error(data.message || t("error"));
+      }
+    },
+    onError: (err) => {
+      const errorMessage = err.response?.data?.message || err.message || t("error");
+      setError(errorMessage);
+      toast.error(errorMessage, { autoClose: 3000 });
+    },
+  });
+
+  const openLogoutModal = useCallback(() => {
+    setLogoutOption("current");
+    setIsLogoutModalOpen(true);
+    setUserMenuOpen(false);
+  }, []);
+
+  const closeLogoutModal = useCallback(() => {
+    setIsLogoutModalOpen(false);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    if (!logoutOption) {
+      toast.error(t("select_logout_option"), { autoClose: 3000 });
+      return;
+    }
+    if (logoutOption === "current") {
+      currentDeviceLogoutMutation.mutate();
+    } else if (logoutOption === "other") {
+      otherDevicesLogoutMutation.mutate();
+    } else if (logoutOption === "all") {
+      allDevicesLogoutMutation.mutate();
+    }
+    logout();
+    setIsLogoutModalOpen(false);
+  }, [logoutOption, currentDeviceLogoutMutation, otherDevicesLogoutMutation, allDevicesLogoutMutation, t]);
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
@@ -56,7 +150,7 @@ export default function DashboardNavbar({ locale }) {
 
   const userMenuItems = [
     { label: t("profile"), href: `/${locale}/dashboard/profile`, icon: FaUserCircle },
-    { label: t("logout"), href: `/${locale}/logout`, icon: FaSignOutAlt },
+    { label: t("logout"), onClick: openLogoutModal, icon: FaSignOutAlt },
   ];
 
   const handleMenuToggle = (idx) => setOpenMenu((prev) => (prev === idx ? null : idx));
@@ -86,7 +180,7 @@ export default function DashboardNavbar({ locale }) {
             <div className="hidden lg:flex flex-1 justify-center mx-4 desktop-menu-container">
               <ul className="flex items-center gap-2">
                 {dashboardLinks.map((item, idx) => (
-                  <li
+                 (item.type === user?.type || item.type === "all" || item.type.includes(user?.type)) && <li
                     key={item.label}
                     className="relative"
                     onMouseEnter={() => setOpenMenu(idx)}
@@ -118,6 +212,7 @@ export default function DashboardNavbar({ locale }) {
                         >
                           <div className="py-1">
                             {item.children.map((sub) => (
+                              (!sub.type || sub.type == user?.type) &&
                               <Link
                                 key={sub.label}
                                 href={sub.href}
@@ -202,11 +297,11 @@ export default function DashboardNavbar({ locale }) {
                 aria-expanded={userMenuOpen}
               >
                 <Image
-                  src="/about-1.jpg"
+                  src={profileData.profile_picture || "/about-1.jpg"}
                   width={40}
                   height={40}
                   alt="User Profile"
-                  className="rounded-full border-2 border-white/30 size-11"
+                  className="rounded-full border-2 border-white/30 size-11 bg-white"
                 />
                 <FaChevronDown
                   className={`w-3 h-3 transition-transform duration-300 text-white/90 ${
@@ -218,30 +313,41 @@ export default function DashboardNavbar({ locale }) {
                 <div className="absolute top-full rtl:left-0 ltr:right-0 mt-1 w-56 bg-white rounded-lg shadow-xl border border-gray-100 backdrop-blur-sm z-50 overflow-hidden">
                   <div className="p-3 border-b border-gray0-200 flex items-center gap-3 bg-emerald-50">
                     <Image
-                      src="/about-1.jpg"
+                      src={profileData.profile_picture || "/about-1.jpg"}
                       width={40}
                       height={40}
                       alt="User Profile"
                       className="size-10 rounded-full border-2 border-emerald-300"
                     />
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-800 truncate">Yosef</p>
+                      <p className="font-semibold text-gray-800 truncate">{profileData.name || ""}</p>
                       <p className="text-xs text-gray-600 flex items-center gap-1 truncate">
-                        <FaEnvelope className="w-4 h-4" /> user@example.com
+                        <FaEnvelope className="w-4 h-4" /> {profileData.email || ""}
                       </p>
                     </div>
                   </div>
                   <div>
                     {userMenuItems.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition text-right border-r-4 border-transparent hover:border-emerald-500 group text-sm"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <span className="font-medium">{item.label}</span>
-                        <item.icon className="text-emerald-600 opacity-0 group-hover:opacity-100 w-4 h-4 transition" />
-                      </Link>
+                      item.href ? (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          className="flex items-center justify-between px-4 py-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition text-right border-r-4 border-transparent hover:border-emerald-500 group text-sm"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <span className="font-medium">{item.label}</span>
+                          <item.icon className="text-emerald-600 opacity-0 group-hover:opacity-100 w-4 h-4 transition" />
+                        </Link>
+                      ) : (
+                        <button
+                          key={item.label}
+                          onClick={item.onClick}
+                          className="w-full flex items-center justify-between px-4 py-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition text-right border-r-4 border-transparent hover:border-emerald-500 group text-sm"
+                        >
+                          <span className="font-medium">{item.label}</span>
+                          <item.icon className="text-emerald-600 opacity-0 group-hover:opacity-100 w-4 h-4 transition" />
+                        </button>
+                      )
                     ))}
                   </div>
                 </div>
@@ -306,16 +412,16 @@ export default function DashboardNavbar({ locale }) {
             onClick={() => setUserMenuOpen(!userMenuOpen)}
           >
             <Image
-              src="/about-1.jpg"
+              src={profileData.profile_picture || "/about-1.jpg"}
               width={40}
               height={40}
               alt="User Profile"
               className="size-10 rounded-full border-2 border-emerald-300 flex-shrink-0"
             />
             <div className="min-w-0">
-              <p className="font-semibold text-gray-800 truncate text-base">Yosef</p>
+              <p className="font-semibold text-gray-800 truncate text-base">{profileData.name || ""}</p>
               <p className="text-xs text-gray-600 truncate flex items-center gap-1">
-                <FaEnvelope className="w-3 h-3" /> user@example.com
+                <FaEnvelope className="w-3 h-3" /> {profileData.email || ""}
               </p>
             </div>
             <FaChevronDown
@@ -329,15 +435,26 @@ export default function DashboardNavbar({ locale }) {
           {userMenuOpen && (
             <div className="bg-white border-t border-b border-gray-300">
               {userMenuItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                </Link>
+                item.href ? (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                ) : (
+                  <button
+                    key={item.label}
+                    onClick={item.onClick}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition"
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                  </button>
+                )
               ))}
             </div>
           )}
@@ -369,6 +486,7 @@ export default function DashboardNavbar({ locale }) {
           {/* Main Navigation Mobile */}
           <nav className="overflow-y-auto h-[calc(120vh-370px)] p-3 space-y-2">
             {dashboardLinks.map((item, idx) => (
+                 (item.type === user?.type || item.type === "all" || item.type.includes(user?.type)) &&
               <div key={item.label} className="space-y-1 border-b border-gray-300 last:border-b-0 pb-2">
                 {item.children ? (
                   <>
@@ -392,6 +510,7 @@ export default function DashboardNavbar({ locale }) {
                     {openMenu === idx && (
                       <div id={`submenu-${idx}`} className="pl-8 space-y-1" role="menu">
                         {item.children.map((sub) => (
+                              (!sub.type || sub.type == user?.type) &&
                           <Link
                             key={sub.label}
                             href={sub.href}
@@ -420,6 +539,57 @@ export default function DashboardNavbar({ locale }) {
           </nav>
         </div>
       </div>
+
+      {/* Logout Modal */}
+      {isLogoutModalOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+            onClick={closeLogoutModal}
+          />
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6">
+              <h3 className="text-xl font-semibold text-[#0B7459] mb-4">{t("logout")}</h3>
+              <div className="space-y-3 mb-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="logoutOption"
+                    value="current"
+                    checked={logoutOption === "current"}
+                    onChange={(e) => setLogoutOption(e.target.value)}
+                    className="text-[#0B7459] focus:ring-[#0B7459]"
+                  />
+                  <span className="text-gray-700">{t("logoutCurrentDevice")}</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="logoutOption"
+                    value="other"
+                    checked={logoutOption === "other"}
+                    onChange={(e) => setLogoutOption(e.target.value)}
+                    className="text-[#0B7459] focus:ring-[#0B7459]"
+                  />
+                  <span className="text-gray-700">{t("logoutOtherDevices")}</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="logoutOption"
+                    value="all"
+                    checked={logoutOption === "all"}
+                    onChange={(e) => setLogoutOption(e.target.value)}
+                    className="text-[#0B7459] focus:ring-[#0B7459]"
+                  />
+                  <span className="text-gray-700">{t("logoutAllDevices")}</span>
+                </label>
+              </div>
+              <SaveCancelButtons onSave={handleLogout} onCancel={closeLogoutModal} saveLabel={t("logout")} />
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

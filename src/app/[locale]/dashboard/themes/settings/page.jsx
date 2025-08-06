@@ -9,65 +9,8 @@ import CustomFilePicker from "../../../../../components/CustomFilePicker";
 import SaveCancelButtons from "../../../../../components/SaveCancelButtons";
 import GlobalToast from "../../../../../components/GlobalToast";
 import { usePathname } from "next/navigation";
-
-// API functions
-const fetchMetaSetting = async ({}, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/meta", {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const updateMetaSetting = async (settingsData, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/meta", {
-    method: "POST",
-    headers: myHeaders,
-    body: settingsData,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const fetchCookiesSetting = async ({}, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/cookies", {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const updateCookiesSetting = async (settingsData, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/cookies", {
-    method: "POST",
-    headers: myHeaders,
-    body: settingsData,
-    redirect: "follow",
-  });
-  return response.json();
-};
+import { fetchMetaSetting, updateMetaSetting, fetchCookiesSetting, updateCookiesSetting } from "../../../../../lib/api";
+ 
 
 const SettingsThemePage = () => {
   const pathname = usePathname();

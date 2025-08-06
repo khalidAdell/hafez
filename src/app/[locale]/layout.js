@@ -6,6 +6,7 @@ import GlobalToast from "../../components/GlobalToast";
 import path from "path";
 import fs from "fs/promises";
 import { notFound } from "next/navigation";
+import { UserProvider } from "../../context/userContext";
 
 const almarai = Almarai({
   subsets: ["arabic"],
@@ -40,9 +41,12 @@ export default async function RootLayout({ children, params }) {
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <body className={almarai.className}>
+        <GlobalToast />
         <NextIntlClientProvider locale={locale} messages={messages}>
+        <UserProvider>
           {children}
           {config && <Footer config={config} />}
+        </UserProvider>
         </NextIntlClientProvider>
       </body>
     </html>

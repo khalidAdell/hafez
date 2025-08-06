@@ -8,14 +8,18 @@ import Link from "next/link";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { IoEyeOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
+import GlobalToast from "../../../components/GlobalToast";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import createAxiosInstance from "../../../lib/axiosInstance";
+import { useUser } from "../../../context/userContext";
 
 const Login = () => {
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
+
+  const { login } = useUser();
 
   const locale = pathname.split("/")[1] || "ar";
 
@@ -67,14 +71,17 @@ const Login = () => {
 
       if (data.success) {
         toast.success(t("loginSuccess"));
-
+        login(data.data);
         Cookies.set("token", data.data.token, {
           expires: rememberMe ? 7 : undefined,
           secure: true,
           sameSite: "Lax",
         });
-
-        router.push(`/${locale}/dashboard`);
+        if(data.data?.type == "admin") {
+          router.push(`/${locale}/dashboard`);
+        } else {
+          router.push(`/${locale}/dashboard/profile`);
+        }
       } else {
         toast.error(data.message || t("loginError"));
       }
@@ -95,6 +102,7 @@ const Login = () => {
   return (
     <div>
       <Navbar forceScrolledStyle={true} />
+      <GlobalToast/>
       <div className="min-h-screen bg-gray-50">
         <section className="md:h-screen h-auto w-full py-20 flex items-center mt-20">
           <div className="container mx-auto h-full md:p-0 p-5">

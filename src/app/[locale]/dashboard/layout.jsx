@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import { notFound } from "next/navigation";
 import DashboardNavbar from "../../../components/dashboard/DashboardNavbar";
 import ClientQueryProvider from "../../../components/ClientQueryProvider";
+import GlobalToast from "../../../components/GlobalToast";
 
 export default async function DashboardLayout({ children, params }) {
   const { locale } = await params;
@@ -26,6 +27,7 @@ export default async function DashboardLayout({ children, params }) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <ClientQueryProvider>
+        <GlobalToast />
         <DashboardNavbar locale={locale} />
         <main className="pt-24 p-4 min-h-screen max-w-7xl mx-auto lg:mt-12 mt-8">
           {children}

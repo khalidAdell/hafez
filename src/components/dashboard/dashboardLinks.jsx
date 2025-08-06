@@ -28,6 +28,7 @@ import {
 } from "react-icons/fa";
 
 export function getDashboardLinks(t, locale) {
+
   
   return [
     {
@@ -37,6 +38,7 @@ export function getDashboardLinks(t, locale) {
         { label: t("sections"), href: `/${locale}/dashboard/articles`, icon: FaEdit },
         { label: t("blog"), href: `/${locale}/dashboard/blogs`, icon: FaBlog },
       ],
+      type: "admin",
     },
     {
       label: t("users"),
@@ -49,6 +51,7 @@ export function getDashboardLinks(t, locale) {
         // { label: t("user_roles"), href: `/${locale}/dashboard/roles`, icon: FaUserShield },
         { label: t("failed_logins_users"), href: `/${locale}/dashboard/users/failed-logins`, icon: FaExclamationTriangle },
       ],
+      type: "admin",
     },
     {
       label: t("employees"),
@@ -57,16 +60,20 @@ export function getDashboardLinks(t, locale) {
         { label: t("employee_list"), href: `/${locale}/dashboard/employees`, icon: FaBriefcase },
         // { label: t("failed_logins_employees"), href: `/${locale}/dashboard/employees/failed-logins`, icon: FaExclamationTriangle },
       ],
-    },
+      type: "admin",
+      },
     {
       label: t("hafez"),
       icon: FaBook,
       children: [
-        { label: t("charities"), href: `/${locale}/dashboard/charities`, icon: FaHeart },
-        { label: t("mosques"), href: `/${locale}/dashboard/mosques`, icon: FaMosque },
-        { label: t("sessions"), href: `/${locale}/dashboard/sessions`, icon: FaCircle },
+        { label: t("charities"), href: `/${locale}/dashboard/charities`, icon: FaHeart, type: "admin" },
+        { label: t("mosques"), href: `/${locale}/dashboard/mosques`, icon: FaMosque, type: "admin" },
+        { label: t("sessions"), href: `/${locale}/dashboard/sessions`, icon: FaCircle, type: "admin" },
         { label: t("timetables"), href: `/${locale}/dashboard/timetables`, icon: FaClipboardList },
+        { label: t("children"), href: `/${locale}/dashboard/children`, icon: FaClipboardList, type: "parent" },
+        { label: t("students"), href: `/${locale}/dashboard/teacher-students`, icon: FaClipboardList, type: "teacher" },
       ],
+      type: ["admin","parent","teacher","student"],
     },
     {
       label: t("pages"),
@@ -77,6 +84,7 @@ export function getDashboardLinks(t, locale) {
         { label: t("videos"), href: `/${locale}/dashboard/videos`, icon: FaVideo },
         { label: t("news"), href: `/${locale}/dashboard/news`, icon: FaNewspaper },
       ],
+      type: "admin",
     },
     {
       label: t("system"),
@@ -90,6 +98,7 @@ export function getDashboardLinks(t, locale) {
         { label: t("cities"), href: `/${locale}/dashboard/cities`, icon: FaCity },
 
       ],
+      type: "admin",
     },
     {
       label: t("design_appearance"),
@@ -100,6 +109,7 @@ export function getDashboardLinks(t, locale) {
         // { label: t("pages_settings"), href: `/${locale}/dashboard/themes/pages`, icon: FaFile },
         { label: t("appearance_settings"), href: `/${locale}/dashboard/themes/settings`, icon: FaPalette },
       ],
+      type: "admin",
     },
     {
       label: t("study_cases"),
@@ -108,6 +118,7 @@ export function getDashboardLinks(t, locale) {
         { label: t("study_levels"), href: `/${locale}/dashboard/statuses`, icon: FaSchool },
         { label: t("cases"), href: `/${locale}/dashboard/cases`, icon: FaBookmark },
       ],
+      type: "admin",
     },
   ];
 }

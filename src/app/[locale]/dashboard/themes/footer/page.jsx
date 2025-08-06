@@ -9,65 +9,7 @@ import CustomFilePicker from "../../../../../components/CustomFilePicker";
 import SaveCancelButtons from "../../../../../components/SaveCancelButtons";
 import GlobalToast from "../../../../../components/GlobalToast";
 import { usePathname } from "next/navigation";
-
-// Placeholder API functions (replace with actual implementations)
-const fetchFooterSettings = async ({}, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/footer", {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const updateFooterSettings = async (settingsData, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/footer", {
-    method: "POST",
-    headers: myHeaders,
-    body: settingsData,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const fetchContactSettings = async ({}, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/contact", {
-    method: "GET",
-    headers: myHeaders,
-    redirect: "follow",
-  });
-  return response.json();
-};
-
-const updateContactSettings = async (settingsData, locale) => {
-  const myHeaders = new Headers();
-  myHeaders.append("Accept", "application/json");
-  myHeaders.append("Accept-Language", locale);
-  myHeaders.append("Authorization", "Bearer 50|xkp6hHMBTY1oRGvVCD426KC8BqwSgXJbNfEQhxZY73f3eec0");
-
-  const response = await fetch("https://7afez.share.net.sa/api/admin/appearance-settings/contact", {
-    method: "POST",
-    headers: myHeaders,
-    body: settingsData,
-    redirect: "follow",
-  });
-  return response.json();
-};
+import { fetchFooterSettings, updateFooterSettings, fetchContactSettings, updateContactSettings } from "../../../../../lib/api";
 
 const FooterPage = () => {
   const pathname = usePathname();
