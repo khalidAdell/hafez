@@ -425,7 +425,7 @@ const MosquesPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      //<GlobalToast />
       <DashboardHeader
         pageTitle={t("mosques")}
         backUrl={`/${locale}/dashboard`}

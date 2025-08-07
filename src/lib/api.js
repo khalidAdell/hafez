@@ -2161,7 +2161,7 @@ export const updateProfilePassword = async (profilePasswordData, locale = "ar",t
   }
 };
 
-export const currentDeviceLogout = async (params = {}, locale = "ar",type) => {
+export const currentDeviceLogout = async (params = {}, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
     const response = await axiosInstance.get(`${type}/me/logout/current`, { params });
@@ -2178,7 +2178,7 @@ export const currentDeviceLogout = async (params = {}, locale = "ar",type) => {
   }
 };
 
-export const otherDevicesLogout = async (params = {}, locale = "ar",type) => {
+export const otherDevicesLogout = async (params = {}, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
     const response = await axiosInstance.get(`${type}/me/logout/others`, { params });
@@ -2195,7 +2195,7 @@ export const otherDevicesLogout = async (params = {}, locale = "ar",type) => {
   }
 };
 
-export const allDevicesLogout = async (params = {}, locale = "ar",type) => {
+export const allDevicesLogout = async (params = {}, locale = "ar",type="admin") => {
   try {
     const axiosInstance = createDashboardAxios(locale);
     const response = await axiosInstance.get(`${type}/me/logout/all`, { params });
@@ -2212,3 +2212,45 @@ export const allDevicesLogout = async (params = {}, locale = "ar",type) => {
   }
 };
 
+
+
+// Attendance API Functions
+export const fetchAttendance = async (
+  params = {},
+  locale = "ar",
+  type = "admin"
+) => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    
+    const response = await axiosInstance.get(`${type}/attendance`, {
+      params,
+    });
+
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات");
+    }
+  } catch (error) {
+    console.error(error.response?.data?.message || error.message);
+    throw error;
+  }
+};
+
+export const createAttendance = async (attendanceData, locale = "ar",type="admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`${type}/attendance`, attendanceData);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};

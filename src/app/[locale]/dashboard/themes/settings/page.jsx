@@ -173,7 +173,7 @@ const SettingsThemePage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardPath
         pageTitle={t("themeSettings")}
         backUrl={`/${locale}/dashboard`}

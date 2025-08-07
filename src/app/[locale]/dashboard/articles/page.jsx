@@ -244,7 +244,7 @@ const BlogSectionsPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("sections")}
         backUrl={`/${locale}/dashboard`}

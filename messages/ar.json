@@ -469,5 +469,19 @@
   "ascending":"التصاعدي",
   "descending":"التصاعدي",
   "per_page":"لكل صفحة",
-  "national_id":"الرقم القومي"
-}
+  "national_id":"الرقم القومي",
+  "add_session_for_teacher":"إضافة حلقة للمدرس",
+  "attendance":"الحضور",
+    "attendance_calendar": "تقويم الحضور",
+    "present": "حاضر",
+    "late": "متأخر",
+    "absent": "غائب",
+    "excused_absence": "غياب مبرر",
+    "status_legend": "مفتاح الحالة",
+    "select_status": "اختر الحالة",
+    "previous": "السابق",
+    "next": "التالي",
+    "week_of": "أسبوع",
+    "empty": "فارغ",
+    "search_children":"بحث عن طفل"
+    }

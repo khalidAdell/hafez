@@ -230,19 +230,30 @@ const ProfilePage = () => {
       return;
     }
     if (logoutOption === "current") {
-      currentDeviceLogoutMutation.mutate();
+      currentDeviceLogoutMutation.mutate(
+        {
+          onSuccess: () => {
+            logout();
+          },
+        }
+      );
     } else if (logoutOption === "other") {
       otherDevicesLogoutMutation.mutate();
     } else if (logoutOption === "all") {
-      allDevicesLogoutMutation.mutate();
+      allDevicesLogoutMutation.mutate(
+        {
+          onSuccess: () => {
+            logout();
+          },
+        }
+      );
     }
-    logout();
     setIsLogoutModalOpen(false);
   }, [logoutOption, currentDeviceLogoutMutation, otherDevicesLogoutMutation, allDevicesLogoutMutation, t]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-16 px-4">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardPath pageTitle={t("profile")} backUrl={`/${locale}/dashboard`} />
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-md p-8">

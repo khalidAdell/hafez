@@ -184,7 +184,7 @@ const FooterPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardPath pageTitle={t("footer")} backUrl={`/${locale}/dashboard`} />
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <div className="p-4">

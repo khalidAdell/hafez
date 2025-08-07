@@ -121,7 +121,7 @@ const FailedLoginPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("login_attempts")}
         backUrl={`/${locale}/dashboard`}

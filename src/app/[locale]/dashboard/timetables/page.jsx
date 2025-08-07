@@ -93,6 +93,7 @@ const TimeTables = () => {
   const { data: surahsData = [], isLoading: surahsLoading } = useQuery({
     queryKey: ["surahs", locale],
     queryFn: () => fetchSurah({}, locale, user?.type),
+    enabled: user?.type != "admin",
   });
   const surahs = surahsData?.data || [];
 

@@ -154,7 +154,7 @@ const FilesPage = () => {
         initialData={defaultInitialData} 
         isEdit={false}
       />
-      <GlobalToast />
+      {/* <GlobalToast /> */}
     </div>
   );
 };

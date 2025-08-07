@@ -137,7 +137,6 @@ const StudentsPage = () => {
   const { data: usersResponse, error: usersError } = useQuery({
     queryKey: ["students", filters, locale],
     queryFn: () => {
-      console.log(`Fetching students with filters:`, filters);
       return fetchUsers({ ...filters, type: "student" }, locale);
     },
     staleTime: 1 * 60 * 1000,
@@ -192,7 +191,6 @@ const StudentsPage = () => {
       if (name === "city_id") {
         newFormData.district_id = "";
       }
-      console.log("Updated formData:", newFormData);
       return newFormData;
     });
   }, []);
@@ -207,7 +205,6 @@ const StudentsPage = () => {
           formData.password_confirmation
         );
       }
-      console.log("Add student data:", [...userData.entries()]);
       return addUser(userData, locale);
     },
     onSuccess: (data) => {
@@ -245,7 +242,6 @@ const StudentsPage = () => {
   const updateUserMutation = useMutation({
     mutationFn: ({ id, userData }) => {
       userData.append("type", "student");
-      console.log("Update student data:", [...userData.entries()]);
       return updateUser({ id, userData }, locale);
     },
     onSuccess: (data) => {
@@ -315,14 +311,12 @@ const StudentsPage = () => {
       } else {
         updatedFilters.district_id = "";
       }
-      console.log("Applying filters:", updatedFilters);
       setFilters((prev) => ({ ...prev, ...updatedFilters }));
     }, 500),
     []
   );
 
   const handleResetFilters = useCallback(() => {
-    console.log("Resetting filters");
     setFilters({
       type: "student",
       search: "",
@@ -654,7 +648,7 @@ const StudentsPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("students")}
         backUrl={`/${locale}/dashboard`}

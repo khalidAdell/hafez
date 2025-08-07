@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import CustomFilePicker from "../../../../components/CustomFilePicker";
 import { useTranslations } from "next-intl";
+import Select from "react-select";
 
 const defaultState = {
   name_ar: "",
@@ -138,25 +139,65 @@ export default function CharityModal({
             {errors.logo_id && <div className="text-red-500 text-xs mt-1">{errors.logo_id}</div>}
           </div>
           <div className="mb-3">
-            <label className="block mb-1 font-medium">{t("city")}</label>
-            <select name="city_id" value={form.city_id} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg">
-              <option value="">{t("city")}</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>{city.name}</option>
-              ))}
-            </select>
-            {errors.city_id && <div className="text-red-500 text-xs mt-1">{errors.city_id}</div>}
-          </div>
-          <div className="mb-3">
-            <label className="block mb-1 font-medium">{t("district")}</label>
-            <select name="district_id" value={form.district_id} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg">
-              <option value="">{t("district")}</option>
-              {districtOptions.map((district) => (
-                <option key={district.id} value={district.id}>{district.name}</option>
-              ))}
-            </select>
-            {errors.district_id && <div className="text-red-500 text-xs mt-1">{errors.district_id}</div>}
-          </div>
+  <label className="block mb-1 font-medium">{t("city")}</label>
+  <Select
+    name="city_id"
+    options={[{ value: "", label: t("city") }, ...cities.map((city) => ({
+      value: city.id,
+      label: city.name,
+    }))]}
+    value={{
+      value: form.city_id,
+      label: cities.find((c) => c.id === form.city_id)?.name || t("city"),
+    }}
+    onChange={(selectedOption) => {
+      const fakeEvent = {
+        target: {
+          name: "city_id",
+          value: selectedOption?.value || "",
+        },
+      };
+      handleChange(fakeEvent);
+    }}
+    className="react-select-container"
+    classNamePrefix="react-select"
+  />
+  {errors.city_id && (
+    <div className="text-red-500 text-xs mt-1">{errors.city_id}</div>
+  )}
+</div>
+<div className="mb-3">
+  <label className="block mb-1 font-medium">{t("district")}</label>
+  <Select
+    name="district_id"
+    options={[{ value: "", label: t("district") }, ...districtOptions.map((district) => ({
+      value: district.id,
+      label: district.name,
+    }))]}
+    value={{
+      value: form.district_id,
+      label:
+        districtOptions.find((d) => d.id === form.district_id)?.name ||
+        t("district"),
+    }}
+    onChange={(selectedOption) => {
+      const fakeEvent = {
+        target: {
+          name: "district_id",
+          value: selectedOption?.value || "",
+        },
+      };
+      handleChange(fakeEvent);
+    }}
+    className="react-select-container"
+    classNamePrefix="react-select"
+    isDisabled={!form.city_id}
+  />
+  {errors.district_id && (
+    <div className="text-red-500 text-xs mt-1">{errors.district_id}</div>
+  )}
+</div>
+
           <div className="mb-3">
             <label className="block mb-1 font-medium">{t("status")}</label>
             <select name="status" value={form.status} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg">

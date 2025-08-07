@@ -635,7 +635,7 @@ const UsersPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("users")}
         backUrl={`/${locale}/dashboard`}

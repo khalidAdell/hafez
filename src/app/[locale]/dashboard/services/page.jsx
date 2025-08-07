@@ -215,7 +215,7 @@ const ServicePage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("services")}
         backUrl={`/${locale}/dashboard`}

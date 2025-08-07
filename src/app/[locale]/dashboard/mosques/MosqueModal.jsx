@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import CustomFilePicker from "../../../../components/CustomFilePicker";
 import DeviceFileUpload from "../../../../components/DeviceFileUpload";
+import Select from "react-select";
 
 const MosqueModal = ({
   isOpen,
@@ -161,42 +162,57 @@ const MosqueModal = ({
                 {t(field.label)}
               </label>
               {field.type === "select" ? (
-                <select
-                  name={field.name}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg"
-                  value={formData[field.name] || ""}
-                  disabled={
-                    field.dependsOn
-                      ? Array.isArray(field.dependsOn)
-                        ? !field.dependsOn.every((dep) => formData[dep])
-                        : !formData[field.dependsOn]
-                      : false
-                  }
-                >
-                  <option value="">{t("all")}</option>
-                  {field.name === "district_id"
-                    ? districtOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))
-                    : field.name === "association_id"
-                    ? associationOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))
-                    : (field.options || []).map((option) => (
-                        <option
-                          key={option.value || option.id}
-                          value={option.value || option.id}
-                        >
-                          {option.label || option.name}
-                        </option>
-                      ))}
-                </select>
-              ) : field.type === "date" ? (
+  <Select
+    name={field.name}
+    isDisabled={
+      field.dependsOn
+        ? Array.isArray(field.dependsOn)
+          ? !field.dependsOn.every((dep) => formData[dep])
+          : !formData[field.dependsOn]
+        : false
+    }
+    options={[
+      { value: "", label: t("all") },
+      ...(field.name === "district_id"
+        ? districtOptions
+        : field.name === "association_id"
+        ? associationOptions
+        : (field.options || []).map((option) => ({
+            value: option.value || option.id,
+            label: option.label || option.name,
+          }))),
+    ]}
+    value={
+      (
+        [
+          { value: "", label: t("all") },
+          ...(field.name === "district_id"
+            ? districtOptions
+            : field.name === "association_id"
+            ? associationOptions
+            : (field.options || []).map((option) => ({
+                value: option.value || option.id,
+                label: option.label || option.name,
+              }))),
+        ].find((opt) => opt.value === formData[field.name]) || {
+          value: "",
+          label: t("all"),
+        }
+      )
+    }
+    onChange={(selectedOption) => {
+      const fakeEvent = {
+        target: {
+          name: field.name,
+          value: selectedOption?.value || "",
+        },
+      };
+      handleChange(fakeEvent);
+    }}
+    className="react-select-container"
+    classNamePrefix="react-select"
+  />
+) : field.type === "date" ? (
                 <input
                   type="date"
                   name={field.name}

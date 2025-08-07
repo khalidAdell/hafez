@@ -27,7 +27,7 @@ export default async function DashboardLayout({ children, params }) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <ClientQueryProvider>
-        <GlobalToast />
+        {/* <GlobalToast /> */}
         <DashboardNavbar locale={locale} />
         <main className="pt-24 p-4 min-h-screen max-w-7xl mx-auto lg:mt-12 mt-8">
           {children}

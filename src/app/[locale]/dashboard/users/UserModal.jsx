@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import CustomFilePicker from "../../../../components/CustomFilePicker";
 import { useTranslations } from "next-intl";
+import Select from "react-select";
 
 const defaultState = {
   name: "",
@@ -23,7 +24,7 @@ const defaultState = {
   national_id: "",
 };
 
-export default function UserModal({
+export default React.memo(function UserModal({
   isOpen,
   onClose,
   onSubmit,
@@ -39,25 +40,32 @@ export default function UserModal({
 }) {
   const [form, setForm] = useState(defaultState);
   const [errors, setErrors] = useState({});
-    const t = useTranslations();
+  const t = useTranslations();
+
   useEffect(() => {
     setForm({ ...defaultState, ...initialData });
   }, [initialData, isOpen]);
 
-  const handleChange = (e) => {
-    const { name, value, type, files } = e.target;
-    let val = type === "file" ? files[0] : value;
+  const handleChange = (e, selectName) => {
+    let name, value;
+    if (e && e.target) {
+      name = e.target.name;
+      value = e.target.value;
+    } else {
+      name = selectName;
+      value = e ? e.value : "";
+    }
+
     setForm((prev) => {
-      const updated = { ...prev, [name]: val };
+      const updated = { ...prev, [name]: value };
       if (name === "city_id") {
         updated.district_id = "";
-        setCityId && setCityId(val);
+        setTimeout(() => setCityId && setCityId(value), 0);
       }
       return updated;
     });
   };
 
-  // Handle CustomFilePicker change
   const handleFileChange = (name, _file, imageId, imageUrl) => {
     setForm((prev) => ({
       ...prev,
@@ -65,7 +73,6 @@ export default function UserModal({
       image_url: imageUrl,
     }));
   };
-
 
   const validate = () => {
     const errs = {};
@@ -98,7 +105,6 @@ export default function UserModal({
       toast.error("يرجى تصحيح الأخطاء قبل الإرسال");
       return;
     }
-    // Build FormData
     const fd = new FormData();
     fd.append("name", form.name);
     fd.append("email", form.email);
@@ -126,12 +132,55 @@ export default function UserModal({
     onSubmit(fd);
   };
 
+  // Memoize options to prevent re-computation on every render
+  const cityOptions = useMemo(() => [
+    { value: "", label: "اختر المدينة" },
+    ...cities.map(city => ({ value: city.id, label: city.name }))
+  ], [cities]);
+
+  const districtOptions = useMemo(() => [
+    { value: "", label: "اختر الحي" },
+    ...districts.filter(d => d.city_id == form.city_id).map(district => ({ value: district.id, label: district.name }))
+  ], [districts, form.city_id]);
+
+  const genderOptions = useMemo(() => [
+    { value: "male", label: "ذكر" },
+    { value: "female", label: "أنثى" }
+  ], []);
+
+  const typeOptions = useMemo(() => [
+    { value: "student", label: "طالب" },
+    { value: "admin", label: "مشرف" },
+    { value: "teacher", label: "معلم" },
+    { value: "parent", label: "ولي أمر" }
+  ], []);
+
+  const studyLevelOptions = useMemo(() => [
+    { value: "", label: "اختر المستوى" },
+    ...studyLevels.map(level => ({ value: level.id, label: level.name }))
+  ], [studyLevels]);
+
+  const sessionOptions = useMemo(() => [
+    { value: "", label: "اختر الجلسة" },
+    ...sessions.map(session => ({ value: session.id, label: session.name }))
+  ], [sessions]);
+
+  const parentOptions = useMemo(() => [
+    { value: "", label: "اختر ولي الأمر" },
+    ...parents.map(parent => ({ value: parent.id, label: parent.name }))
+  ], [parents]);
+
+  const statusOptions = useMemo(() => [
+    { value: "", label: "اختر الحالة" },
+    { value: "active", label: "نشط" },
+    { value: "inactive", label: "غير نشط" }
+  ], []);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute w-full h-full bg-black/50"
-      onClick={onClose}></div>
+      <div className="absolute w-full h-full bg-black/50" onClick={onClose}></div>
       <form
         className="bg-white max-h-[90%] overflow-auto p-8 rounded-xl w-full max-w-2xl shadow-lg space-y-6 relative"
         onSubmit={handleSubmit}
@@ -149,17 +198,17 @@ export default function UserModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block mb-1 font-medium">الاسم</label>
-            <input name="name" value={form.name} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+            <input name="name" value={form.name} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
             {errors.name && <div className="text-red-500 text-xs mt-1">{errors.name}</div>}
           </div>
           <div>
             <label className="block mb-1 font-medium">البريد الإلكتروني</label>
-            <input name="email" value={form.email} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+            <input name="email" value={form.email} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
             {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
           </div>
           <div>
             <label className="block mb-1 font-medium">رقم الهاتف</label>
-            <input name="phone" value={form.phone} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+            <input name="phone" value={form.phone} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
             {errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
           </div>
           <div>
@@ -175,57 +224,67 @@ export default function UserModal({
           </div>
           <div>
             <label className="block mb-1 font-medium">المدينة</label>
-            <select name="city_id" value={form.city_id} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-              <option value="">اختر المدينة</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>{city.name}</option>
-              ))}
-            </select>
+            <Select
+              name="city_id"
+              value={cityOptions.find(option => option.value == form.city_id) || null}
+              onChange={(option) => handleChange(option, "city_id")}
+              options={cityOptions}
+              className="w-full"
+              classNamePrefix="react-select"
+            />
             {errors.city_id && <div className="text-red-500 text-xs mt-1">{errors.city_id}</div>}
           </div>
           <div>
             <label className="block mb-1 font-medium">الحي</label>
-            <select name="district_id" value={form.district_id} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-              <option value="">اختر الحي</option>
-              {districts.filter(d => d.city_id == form.city_id).map((district) => (
-                <option key={district.id} value={district.id}>{district.name}</option>
-              ))}
-            </select>
+            <Select
+              name="district_id"
+              value={districtOptions.find(option => option.value == form.district_id) || null}
+              onChange={(option) => handleChange(option, "district_id")}
+              options={districtOptions}
+              className="w-full"
+              classNamePrefix="react-select"
+            />
             {errors.district_id && <div className="text-red-500 text-xs mt-1">{errors.district_id}</div>}
           </div>
           <div>
             <label className="block mb-1 font-medium">الجنس</label>
-            <select name="gender" value={form.gender} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-              <option value="male">ذكر</option>
-              <option value="female">أنثى</option>
-            </select>
+            <Select
+              name="gender"
+              value={genderOptions.find(option => option.value === form.gender) || null}
+              onChange={(option) => handleChange(option, "gender")}
+              options={genderOptions}
+              className="w-full"
+              classNamePrefix="react-select"
+            />
             {errors.gender && <div className="text-red-500 text-xs mt-1">{errors.gender}</div>}
           </div>
           <div>
             <label className="block mb-1 font-medium">النوع</label>
-            <select name="type" value={form.type} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-              <option value="student">طالب</option>
-              <option value="admin">مشرف</option>
-              <option value="teacher">معلم</option>
-              <option value="parent">ولي أمر</option>
-            </select>
+            <Select
+              name="type"
+              value={typeOptions.find(option => option.value === form.type) || null}
+              onChange={(option) => handleChange(option, "type")}
+              options={typeOptions}
+              className="w-full"
+              classNamePrefix="react-select"
+            />
             {errors.type && <div className="text-red-500 text-xs mt-1">{errors.type}</div>}
           </div>
           {!isEdit && (
             <>
               <div>
                 <label className="block mb-1 font-medium">كلمة المرور</label>
-                <input name="password" type="password" value={form.password} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+                <input name="password" type="password" value={form.password} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
                 {errors.password && <div className="text-red-500 text-xs mt-1">{errors.password}</div>}
               </div>
               <div>
                 <label className="block mb-1 font-medium">تأكيد كلمة المرور</label>
-                <input name="password_confirmation" type="password" value={form.password_confirmation} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+                <input name="password_confirmation" type="password" value={form.password_confirmation} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
                 {errors.password_confirmation && <div className="text-red-500 text-xs mt-1">{errors.password_confirmation}</div>}
               </div>
               <div>
                 <label className="block mb-1 font-medium">تاريخ الميلاد</label>
-                <input name="age" type="date" value={form.age} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+                <input name="age" type="date" value={form.age} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
                 {errors.age && <div className="text-red-500 text-xs mt-1">{errors.age}</div>}
               </div>
             </>
@@ -233,7 +292,7 @@ export default function UserModal({
           {form.type === "teacher" && (
             <div>
               <label className="block mb-1 font-medium">الوظيفة</label>
-              <input name="job" value={form.job} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+              <input name="job" value={form.job} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
               {errors.job && <div className="text-red-500 text-xs mt-1">{errors.job}</div>}
             </div>
           )}
@@ -241,67 +300,76 @@ export default function UserModal({
             <>
               <div>
                 <label className="block mb-1 font-medium">المستوى الدراسي</label>
-                <select name="study_level_id" value={form.study_level_id || form?.study_level?.id || ""} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-                  <option value="">اختر المستوى</option>
-                  {studyLevels.map((level) => (
-                    <option key={level.id} value={level.id}>{level.name}</option>
-                  ))}
-                </select>
+                <Select
+                  name="study_level_id"
+                  value={studyLevelOptions.find(option => option.value === (form.study_level_id || form?.study_level?.id)) || null}
+                  onChange={(option) => handleChange(option, "study_level_id")}
+                  options={studyLevelOptions}
+                  className="w-full"
+                  classNamePrefix="react-select"
+                />
                 {errors.study_level_id && <div className="text-red-500 text-xs mt-1">{errors.study_level_id}</div>}
               </div>
               <div>
                 <label className="block mb-1 font-medium">الجلسة</label>
-                <select name="session_id" value={form.session_id || form?.session?.id || ""} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-                  <option value="">اختر الجلسة</option>
-                  {sessions.map((session) => (
-                    <option key={session.id} value={session.id}>{session.name}</option>
-                  ))}
-                </select>
+                <Select
+                  name="session_id"
+                  value={sessionOptions.find(option => option.value === (form.session_id || form?.session?.id)) || null}
+                  onChange={(option) => handleChange(option, "session_id")}
+                  options={sessionOptions}
+                  className="w-full"
+                  classNamePrefix="react-select"
+                />
                 {errors.session_id && <div className="text-red-500 text-xs mt-1">{errors.session_id}</div>}
               </div>
               <div>
                 <label className="block mb-1 font-medium">ولي الأمر</label>
-                <select name="parent_id" value={form.parent_id || form?.parent?.id || ""} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-                  <option value="">اختر ولي الأمر</option>
-                  {parents.map((parent) => (
-                    <option key={parent.id} value={parent.id}>{parent.name}</option>
-                  ))}
-                </select>
+                <Select
+                  name="parent_id"
+                  value={parentOptions.find(option => option.value === (form.parent_id || form?.parent?.id)) || null}
+                  onChange={(option) => handleChange(option, "parent_id")}
+                  options={parentOptions}
+                  className="w-full"
+                  classNamePrefix="react-select"
+                />
                 {errors.parent_id && <div className="text-red-500 text-xs mt-1">{errors.parent_id}</div>}
               </div>
             </>
           )}
-            <div>
-                <label className="block mb-1 font-medium">الحالة</label>
-                <select name="status" value={form.status} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]">
-                  <option value="">اختر الحالة</option>
-                  <option value="active">نشط</option>
-                  <option value="inactive">غير نشط</option>
-                </select>
-                {errors.status && <div className="text-red-500 text-xs mt-1">{errors.status}</div>}
-              </div>
-            <div>
-                <label className="block mb-1 font-medium">الرقم الوطني</label>
-                <input name="national_id" placeholder="10 ارقام" value={form.national_id} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
-                {errors.national_id && <div className="text-red-500 text-xs mt-1">{errors.national_id}</div>}
-              </div>
+          <div>
+            <label className="block mb-1 font-medium">الحالة</label>
+            <Select
+              name="status"
+              value={statusOptions.find(option => option.value === form.status) || null}
+              onChange={(option) => handleChange(option, "status")}
+              options={statusOptions}
+              className="w-full"
+              classNamePrefix="react-select"
+            />
+            {errors.status && <div className="text-red-500 text-xs mt-1">{errors.status}</div>}
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">الرقم الوطني</label>
+            <input name="national_id" placeholder="10 ارقام" value={form.national_id} onChange={(e) => handleChange(e)} className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0B7459]" />
+            {errors.national_id && <div className="text-red-500 text-xs mt-1">{errors.national_id}</div>}
+          </div>
         </div>
         <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#0B7459] text-white rounded-lg hover:bg-[#096a4d]"
-            >
-              {isEdit ? t("update") : t("add")}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
+          >
+            {t("cancel")}
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-[#0B7459] text-white rounded-lg hover:bg-[#096a4d]"
+          >
+            {isEdit ? t("update") : t("add")}
+          </button>
+        </div>
       </form>
     </div>
   );
-}
+});

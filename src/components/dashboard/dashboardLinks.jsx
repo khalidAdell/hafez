@@ -72,8 +72,15 @@ export function getDashboardLinks(t, locale) {
         { label: t("timetables"), href: `/${locale}/dashboard/timetables`, icon: FaClipboardList },
         { label: t("children"), href: `/${locale}/dashboard/children`, icon: FaClipboardList, type: "parent" },
         { label: t("students"), href: `/${locale}/dashboard/teacher-students`, icon: FaClipboardList, type: "teacher" },
+        { label: t("attendance"), href: `/${locale}/dashboard/attendance`, icon: FaClipboardList, type: "admin" },
       ],
       type: ["admin","parent","teacher","student"],
+    },
+    {
+      label: t("attendance"),
+      icon: FaClipboardList,
+      href: `/${locale}/dashboard/attendance`,
+      type: ["parent","teacher","student"],
     },
     {
       label: t("pages"),

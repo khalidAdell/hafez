@@ -247,7 +247,7 @@ const FaqPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("faq")}
         backUrl={`/${locale}/dashboard`}

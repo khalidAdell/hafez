@@ -24,7 +24,6 @@ import SaveCancelButtons from "../SaveCancelButtons";
 export default function DashboardNavbar({ locale }) {
   const router = useRouter();
   const {user, logout} = useUser();
-
   const [openMenu, setOpenMenu] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -121,13 +120,24 @@ export default function DashboardNavbar({ locale }) {
       return;
     }
     if (logoutOption === "current") {
-      currentDeviceLogoutMutation.mutate();
+      currentDeviceLogoutMutation.mutate(
+        {
+          onSuccess: () => {
+            logout();
+          },
+        }
+      );
     } else if (logoutOption === "other") {
       otherDevicesLogoutMutation.mutate();
     } else if (logoutOption === "all") {
-      allDevicesLogoutMutation.mutate();
+      allDevicesLogoutMutation.mutate(
+        {
+          onSuccess: () => {
+            logout();
+          },
+        }
+      );
     }
-    logout();
     setIsLogoutModalOpen(false);
   }, [logoutOption, currentDeviceLogoutMutation, otherDevicesLogoutMutation, allDevicesLogoutMutation, t]);
 

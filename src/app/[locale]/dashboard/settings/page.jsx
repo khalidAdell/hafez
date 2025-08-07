@@ -138,7 +138,7 @@ const SettingsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardPath pageTitle={t("Settings")} backUrl={`/${locale}/dashboard`} />
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
       <div className="max-w-6xl mx-auto p-6">

@@ -19,7 +19,7 @@ import {
   fetchCities,
   fetchDistricts,
 } from "../../../../lib/api";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const TeachersPage = () => {
   const pathname = usePathname();
@@ -30,6 +30,8 @@ const TeachersPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const router = useRouter
+  ();
   const [filters, setFilters] = useState({
     type: "teacher",
     search: "",
@@ -485,7 +487,7 @@ const TeachersPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <GlobalToast />
+      {/* <GlobalToast /> */}
       <DashboardHeader
         pageTitle={t("teachers")}
         backUrl={`/${locale}/dashboard`}
@@ -523,7 +525,12 @@ const TeachersPage = () => {
         }}
         onSubmit={(data) => {
           data.append("type", "teacher");
-          addUserMutation.mutate(data);
+          addUserMutation.mutate(data,{
+            onSuccess: () => {
+              router.push(`/${locale}/dashboard/sessions`);
+              toast.success(t("add_session_for_teacher"), { autoClose: 3000 });
+            },
+          });
         }}
         initialData={formData}
         isEdit={false}

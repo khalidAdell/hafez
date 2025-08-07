@@ -238,7 +238,7 @@ const BlogPage = () => {
           : [],
       },
       {
-        name: "img_id",
+        name: "img",
         label: "image",
         type: "image-picker",
         required: true,
@@ -293,7 +293,7 @@ const BlogPage = () => {
               if (row) {
                 setSelectedBlog({
                   ...row,
-                  img_id: row.img || "",
+                  img: row.img || "",
                   img_url: row.image_url || "",
                 });
                 setIsEditModalOpen(true);
@@ -347,7 +347,7 @@ const BlogPage = () => {
         onSubmit={(data) => {
           addBlogMutation.mutate(data);
         }}
-        initialData={{ img_id: "", img_url: "" }}
+        initialData={{ img: "", img_url: "" }}
         fieldsConfig={fieldsConfig}
         fetchDependencies={optimizedFetchDependencies}
         locale={locale}
@@ -370,7 +370,7 @@ const BlogPage = () => {
             description_ar: blogData?.data?.description_ar || "",
             description_en: blogData?.data?.description_en || "",
             category_id: selectedBlog?.category_id || "",
-            img_id: selectedBlog?.img || "",
+            img: selectedBlog?.img || "",
             img_url: selectedBlog?.image_url || "",
           }
         }

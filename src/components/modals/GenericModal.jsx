@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import CustomFilePicker from "../CustomFilePicker";
 import DeviceFileUpload from "../DeviceFileUpload";
+import Select from "react-select";
 
 const GenericModal = ({
   isOpen,
@@ -146,7 +147,6 @@ const GenericModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     for (const field of fieldsConfig) {
       if (field.required && !formData[field.name]) {
         toast.error(t(`${field.label}_required`), { autoClose: 3000 });
@@ -171,8 +171,18 @@ const GenericModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90%] overflow-auto">
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="absolute w-full h-full bg-black/50"
+      onClick={onClose}
+      />
+      <div className="bg-white rounded-lg p-6 relative w-full max-w-md max-h-[90%] overflow-auto">
+        <button
+          type="button"
+          className="absolute top-4 ltr:right-4 rtl:left-4 text-2xl text-gray-400 hover:text-gray-700"
+          onClick={onClose}
+        >
+          &times;
+        </button>
         <h2 className="text-2xl font-bold text-[#0B7459] mb-4">
           {isEdit ? t("edit_entity") : t("add_entity")}
         </h2>
@@ -183,41 +193,56 @@ const GenericModal = ({
                 {t(field.label)}
               </label>
               {field.type === "select" ? (
-                <select
-                  name={field.name}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg"
-                  value={formData[field.name] || ""}
-                  disabled={
-                    field.dependsOn
-                      ? Array.isArray(field.dependsOn)
-                        ? !field.dependsOn.every((dep) => formData[dep])
-                        : !formData[field.dependsOn]
-                      : false
-                  }
-                >
-                  <option value="">{t("all")}</option>
-                  {field.name === "district_id"
-                    ? districtOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))
-                    : field.name === "association_id"
-                    ? associationOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))
-                    : (field.options || []).map((option,index) => (
-                        <option
-                          key={`${option.value}-${index}` || `${option.id}-${index}`}
-                          value={option.value || option.id}
-                        >
-                          {option.label || option.name}
-                        </option>
-                      ))}
-                </select>
+           <Select
+           name={field.name}
+           isDisabled={
+             field.dependsOn
+               ? Array.isArray(field.dependsOn)
+                 ? !field.dependsOn.every((dep) => formData[dep])
+                 : !formData[field.dependsOn]
+               : false
+           }
+           options={[
+             { value: "", label: t("all") },
+             ...(field.name === "district_id"
+               ? districtOptions
+               : field.name === "association_id"
+               ? associationOptions
+               : (field.options || []).map((option) => ({
+                   value: option.value || option.id,
+                   label: option.label || option.name,
+                 }))),
+           ]}
+           value={
+             (
+               [
+                 { value: "", label: t("all") },
+                 ...(field.name === "district_id"
+                   ? districtOptions
+                   : field.name === "association_id"
+                   ? associationOptions
+                   : (field.options || []).map((option) => ({
+                       value: option.value || option.id,
+                       label: option.label || option.name,
+                     }))),
+               ].find((opt) => opt.value === formData[field.name]) || {
+                 value: "",
+                 label: t("all"),
+               }
+             )
+           }
+           onChange={(selectedOption) => {
+             const fakeEvent = {
+               target: {
+                 name: field.name,
+                 value: selectedOption?.value || "",
+               },
+             };
+             handleChange(fakeEvent);
+           }}
+           className="react-select-container"
+           classNamePrefix="react-select"
+         />
               ) : field.type === "date" ? (
                 <input
                   type="date"
