@@ -101,7 +101,7 @@ const ProfilePage = () => {
     onSuccess: (data) => {
       if (data.success) {
         toast.success(data.message, { autoClose: 3000 });
-        router.push(`/${locale}/login`);
+        logout();
       } else {
         throw new Error(data.message || t("error"));
       }
@@ -134,7 +134,7 @@ const ProfilePage = () => {
     onSuccess: (data) => {
       if (data.success) {
         toast.success(data.message, { autoClose: 3000 });
-        router.push(`/${locale}/login`);
+        logout();
       } else {
         throw new Error(data.message || t("error"));
       }
@@ -230,23 +230,11 @@ const ProfilePage = () => {
       return;
     }
     if (logoutOption === "current") {
-      currentDeviceLogoutMutation.mutate(
-        {
-          onSuccess: () => {
-            logout();
-          },
-        }
-      );
+      currentDeviceLogoutMutation.mutate();
     } else if (logoutOption === "other") {
       otherDevicesLogoutMutation.mutate();
     } else if (logoutOption === "all") {
-      allDevicesLogoutMutation.mutate(
-        {
-          onSuccess: () => {
-            logout();
-          },
-        }
-      );
+      allDevicesLogoutMutation.mutate();
     }
     setIsLogoutModalOpen(false);
   }, [logoutOption, currentDeviceLogoutMutation, otherDevicesLogoutMutation, allDevicesLogoutMutation, t]);

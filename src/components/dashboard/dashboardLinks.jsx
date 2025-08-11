@@ -73,6 +73,7 @@ export function getDashboardLinks(t, locale) {
         { label: t("children"), href: `/${locale}/dashboard/children`, icon: FaClipboardList, type: "parent" },
         { label: t("students"), href: `/${locale}/dashboard/teacher-students`, icon: FaClipboardList, type: "teacher" },
         { label: t("attendance"), href: `/${locale}/dashboard/attendance`, icon: FaClipboardList, type: "admin" },
+        { label: t("actions"), href: `/${locale}/dashboard/actions`, icon: FaClipboardList, type: "admin" },
       ],
       type: ["admin","parent","teacher","student"],
     },

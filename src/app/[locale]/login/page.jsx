@@ -19,26 +19,26 @@ const Login = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const { login } = useUser();
+  const { login: userLogin } = useUser();
 
   const locale = pathname.split("/")[1] || "ar";
 
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({ login: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
-    let tempErrors = { email: "", password: "" };
+    let tempErrors = { login: "", password: "" };
     let isValid = true;
 
-    if (!email) {
-      tempErrors.email = t("emailRequired");
+    if (!login) {
+      tempErrors.login = t("loginRequired");
       isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = t("emailInvalid");
+    } else if (!/\S+@\S+\.\S+/.test(login)) {
+      tempErrors.login = t("loginInvalid");
       isValid = false;
     }
 
@@ -56,13 +56,13 @@ const Login = () => {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    setErrors({ email: "", password: "" });
+    setErrors({ login: "", password: "" });
 
     try {
       const axiosInstance = createAxiosInstance();
 
       const response = await axiosInstance.post("/auth/login", {
-        email,
+        login,
         password,
         rememberMe,
       });
@@ -71,7 +71,7 @@ const Login = () => {
 
       if (data.success) {
         toast.success(t("loginSuccess"));
-        login(data.data);
+        userLogin(data.data);
         Cookies.set("token", data.data.token, {
           expires: rememberMe ? 7 : undefined,
           secure: true,
@@ -104,7 +104,7 @@ const Login = () => {
       <Navbar forceScrolledStyle={true} />
       <GlobalToast/>
       <div className="min-h-screen bg-gray-50">
-        <section className="md:h-screen h-auto w-full py-20 flex items-center mt-20">
+        <section className="md:h-screen h-auto w-full pb-20 flex items-center mt-20">
           <div className="container mx-auto h-full md:p-0 p-5">
             <div className="grid md:grid-cols-2 grid-cols-1 md:gap-20 gap-5 h-full">
               {/* صورة جانبية */}
@@ -135,26 +135,26 @@ const Login = () => {
                     >
                       <div className="flex flex-col">
                         <label
-                          htmlFor="email"
+                          htmlFor="login"
                           className="text-sm font-medium text-gray-700 mb-1"
                         >
-                          {t("email")}
+                          {t("login")}
                         </label>
                         <input
-                          type="email"
-                          id="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          type="text"
+                          id="login"
+                          value={login}
+                          onChange={(e) => setLogin(e.target.value)}
                           className={`border rounded-md px-4 py-2 w-full focus:outline-none focus:ring-2 ${
-                            errors.email
+                            errors.login
                               ? "border-red-600 focus:ring-red-600"
                               : "border-gray-300 focus:ring-[#0B7459]"
                           } text-black`}
-                          placeholder={t("enterEmail")}
+                          placeholder={t("enterLogin")}
                         />
-                        {errors.email && (
+                        {errors.login && (
                           <span className="text-red-500 text-sm mt-1">
-                            {errors.email}
+                            {errors.login}
                           </span>
                         )}
                       </div>
@@ -243,16 +243,6 @@ const Login = () => {
                         </button>
                       </div>
                     </form>
-
-                    <div className="text-sm text-center mt-10">
-                      {t("noAccount")}{" "}
-                      <Link
-                        href={`/${locale}/register`}
-                        className="text-[#0B7459] hover:text-[#095c47] transition-colors duration-300"
-                      >
-                        {t("registerNow")}
-                      </Link>
-                    </div>
                   </div>
                 </div>
               </div>

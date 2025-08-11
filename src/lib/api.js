@@ -2254,3 +2254,116 @@ export const createAttendance = async (attendanceData, locale = "ar",type="admin
     throw error;
   }
 };
+
+export const importAttendance = async (attendanceData, locale = "ar",type="teacher") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`${type}/attendance/import`, attendanceData);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة بيانات");
+    }
+  } catch (error) {
+    console.error(
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+// Actions
+export const fetchActions = async (params = {}, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/actions`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الأجراءات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الأجراءات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+export const showAction = async (id, locale = "ar", type = "admin") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/actions/${id}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الأجراء");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الأجراء:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addActions = async (actionData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/actions", actionData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة الأجراء");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة الأجراء:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateActions = async ({ id, actionData }, locale = "ar") => {
+  console.log(actionData);
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/admin/actions/${id}`, actionData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل الأجراء");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في تعديل الأجراء:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const deleteActions = async (userId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/actions/${userId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف الأجراء");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في حذف الأجراء:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+}
+  
