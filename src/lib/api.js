@@ -1808,6 +1808,23 @@ export const fetchStudents = async (params = {}, locale = "ar", type = "teacher"
     throw error;
   }
 };
+export const fetchTeacherSessions = async (params = {}, locale = "ar", type = "teacher") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`${type}/me/my-sessions`, { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات الجلسات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب الجلسات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
 export const fetchStudentById = async (params = {}, locale = "ar", type = "teacher") => {
   try {
     const axiosInstance = createDashboardAxios(locale);

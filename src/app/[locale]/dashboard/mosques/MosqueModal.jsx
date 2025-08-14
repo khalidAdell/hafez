@@ -15,33 +15,31 @@ const MosqueModal = ({
   fieldsConfig = [],
   fetchDependencies = {},
   locale,
-  setCityId = null,
 }) => {
   const t = useTranslations();
   const [formData, setFormData] = useState({});
   const [districtOptions, setDistrictOptions] = useState([]);
   const [associationOptions, setAssociationOptions] = useState([]);
-
   // Initialize formData with initialData, flattening nested IDs
+  
   useEffect(() => {
     const flattenedData = {
       ...initialData,
       image_id: initialData.image_id || initialData.image || "",
       image_url: initialData.image_url || "",
-      city_id: initialData.district?.city?.id ? String(initialData.district.city.id) : String(initialData.city_id || ""),
       district_id: initialData.district?.id ? String(initialData.district.id) : String(initialData.district_id || ""),
       association_id: initialData.association?.id ? String(initialData.association.id) : String(initialData.association_id || ""),
       user_id: initialData.user?.id ? String(initialData.user.id) : String(initialData.user_id || ""),
     };
     setFormData(flattenedData);
   }, [initialData]);
+ 
 
-  // Fetch districts when city_id changes or on initial load
   useEffect(() => {
     const fetchDistrictsForCity = async () => {
-      if (formData.city_id && fetchDependencies.district_id) {
+      if ( fetchDependencies.district_id) {
         try {
-          const districts = await fetchDependencies.district_id(formData.city_id);
+          const districts = await fetchDependencies.district_id("");
           const options = districts.map((district) => ({
             value: String(district.id),
             label: district.name,
@@ -65,15 +63,15 @@ const MosqueModal = ({
     };
 
     fetchDistrictsForCity();
-  }, [formData.city_id, fetchDependencies, t, isEdit]);
+  }, [  fetchDependencies, t, isEdit]);
 
-  // Fetch associations when city_id and district_id change or on initial load
+  // Fetch associations when district_id change or on initial load
   useEffect(() => {
-    const fetchAssociationsForCityAndDistrict = async () => {
-      if (formData.city_id && formData.district_id && fetchDependencies.association_id) {
+    const fetchAssociationsForDistrict = async () => {
+      if ( formData.district_id && fetchDependencies.association_id) {
         try {
           const associations = await fetchDependencies.association_id(
-            formData.city_id,
+     
             formData.district_id
           );
           const options = associations.map((assoc) => ({
@@ -98,16 +96,13 @@ const MosqueModal = ({
       }
     };
 
-    fetchAssociationsForCityAndDistrict();
-  }, [formData.city_id, formData.district_id, fetchDependencies, t, isEdit]);
+    fetchAssociationsForDistrict();
+  }, [ formData.district_id, fetchDependencies, t, isEdit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "city_id" && setCityId) {
-      setCityId(value);
-      setFormData((prev) => ({ ...prev, district_id: "", association_id: "", [name]: value }));
-    } else if (name === "district_id") {
+    if (name === "district_id") {
       setFormData((prev) => ({ ...prev, association_id: "", [name]: value }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));

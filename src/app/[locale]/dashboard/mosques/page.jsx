@@ -9,15 +9,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DashboardHeader from "../../../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../../../components/dashboard/DashboardTable";
 import CustomActions from "../../../../components/modals/CustomActions";
-import MosqueModal from "./MosqueModal";
 import DeleteModal from "../../../../components/modals/DeleteModal";
 import GlobalToast from "../../../../components/GlobalToast";
+import MosqueModal from "./MosqueModal";
 import {
   fetchMosques,
   addMosque,
   updateMosque,
   deleteMosque,
-  fetchCities,
   fetchDistricts,
   fetchAssociations,
   fetchUsers,
@@ -39,7 +38,6 @@ const MosquesPage = () => {
     sort_by: "name",
     order: "asc",
     per_page: 15,
-    city_id: "",
     district_id: "",
     association_id: "",
     user_id: "",
@@ -47,28 +45,19 @@ const MosquesPage = () => {
   });
   const [error, setError] = useState(null);
 
-  const { data: cities = [], error: citiesError } = useQuery({
-    queryKey: ["cities", locale],
-    queryFn: () => {
-      return fetchCities({}, locale);
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
 
   const { data: districts = [], error: districtsError } = useQuery({
-    queryKey: ["districts", filters.city_id, locale],
+    queryKey: ["districts", locale],
     queryFn: () => {
-      return fetchDistricts(filters.city_id, locale);
+      return fetchDistricts({}, locale);
     },
-    enabled: !!filters.city_id,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: associations = [], error: associationsError } = useQuery({
     queryKey: ["associations", locale],
     queryFn: () => {
-      return fetchAssociations({city_id: filters.city_id,district_id: filters.district_id}, locale).then((res) => res.data.data);
+      return fetchAssociations({district_id: filters.district_id}, locale).then((res) => res.data.data);
     },
     staleTime: 5 * 60 * 1000,
     enabled: !!filters.district_id,
@@ -91,9 +80,8 @@ const MosquesPage = () => {
   });
 
   useEffect(() => {
-    if (citiesError || associationsError || districtsError || mosquesError || teachersError) {
+    if (associationsError || districtsError || mosquesError || teachersError) {
       const errorMessage =
-        citiesError?.message ||
         associationsError?.message ||
         districtsError?.message ||
         mosquesError?.message ||
@@ -104,7 +92,7 @@ const MosquesPage = () => {
     } else {
       setError(null);
     }
-  }, [citiesError, associationsError, districtsError, mosquesError, teachersError, t]);
+  }, [associationsError, districtsError, mosquesError, teachersError, t]);
 
   const addMosqueMutation = useMutation({
     mutationFn: (mosqueData) => addMosque(mosqueData, locale),
@@ -162,14 +150,6 @@ const MosquesPage = () => {
     debounce((newFilters) => {
       console.log("Applying filters:", newFilters);
       const updatedFilters = { ...newFilters };
-      if (newFilters.city_name) {
-        const selectedCity = cities?.data?.data.find(
-          (city) => city.name === newFilters.city_name
-        );
-        updatedFilters.city_id = selectedCity ? selectedCity.id : "";
-      } else {
-        updatedFilters.city_id = "";
-      }
       if (newFilters.district_name) {
         const selectedDistrict = districts.find(
           (district) => district.name === newFilters.district_name
@@ -190,12 +170,11 @@ const MosquesPage = () => {
       } else {
         updatedFilters.association_id = "";
       }
-      delete updatedFilters.city_name;
       delete updatedFilters.district_name;
       delete updatedFilters.association_name;
       setFilters((prev) => ({ ...prev, ...updatedFilters }));
     }, 500),
-    [cities, districts, associations]
+    [districts, associations]
   );
 
   const handleResetFilters = useCallback(() => {
@@ -206,7 +185,6 @@ const MosquesPage = () => {
       sort_by: "name",
       order: "asc",
       per_page: 15,
-      city_id: "",
       district_id: "",
       association_id: "",
       user_id: "",
@@ -225,15 +203,7 @@ const MosquesPage = () => {
           { value: "inactive", label: "inactive" },
         ],
       },
-      {
-        name: "city_name",
-        label: "city",
-        type: "select",
-        options: cities?.data?.data.map((city) => ({
-          value: city.name,
-          label: city.name,
-        })),
-      },
+ 
       {
         name: "district_name",
         label: "district",
@@ -259,7 +229,7 @@ const MosquesPage = () => {
         min: 0,
       },
     ],
-    [cities, districts, associations]
+    [districts, associations]
   );
 
   const fieldsConfig = useMemo(
@@ -275,20 +245,11 @@ const MosquesPage = () => {
           { value: "inactive", label: "inactive" },
         ],
       },
-      {
-        name: "city_id",
-        label: "city",
-        type: "select",
-        options: cities?.data?.data.map((city) => ({
-          value: city.id,
-          label: city.name,
-        })),
-      },
+ 
       {
         name: "district_id",
         label: "district",
         type: "select",
-        dependsOn: "city_id",
         options: districts.map((district) => ({
           value: district.id,
           label: district.name,
@@ -314,7 +275,7 @@ const MosquesPage = () => {
       },
 
     ],
-    [cities, districts, associations]
+    [districts, associations]
   );
 
   const searchConfig = { field: "search", placeholder: "search_mosques" };
@@ -329,11 +290,6 @@ const MosquesPage = () => {
         render: (row) => row.user?.name || "غير محدد",
       },
 
-      {
-        header: t("city"),
-        accessor: "district",
-        render: (row) => row.district?.city?.name || "غير محدد",
-      },
       {
         header: t("district"),
         accessor: "district",
@@ -390,34 +346,22 @@ const MosquesPage = () => {
 
   const optimizedFetchDependencies = useMemo(
     () => ({
-      city_id: async () => {
-        const cachedData = queryClient.getQueryData(["cities", locale]);
-        if (cachedData) {
-          console.log("Using cached cities data");
-          return cachedData;
-        }
-        return await fetchCities({}, locale);
-      },
-      district_id: async (cityId) => {
-        if (!cityId) {
-          return [];
-        }
+      district_id: async () => {
         const cachedData = queryClient.getQueryData([
           "districts",
-          cityId,
           locale,
         ]);
         if (cachedData) {
           return cachedData;
         }
-        return await fetchDistricts(cityId, locale);
+        return await fetchDistricts({}, locale);
       },
-      association_id: async (cityId,districtId) => {
-        const cachedData = queryClient.getQueryData(["associations",cityId,districtId, locale]);
+      association_id: async (districtId) => {
+        const cachedData = queryClient.getQueryData(["associations",districtId, locale]);
         if (cachedData) {
           return cachedData;
         }
-        return await fetchAssociations({city_id: cityId,district_id: districtId}, locale).then((res) => res.data.data);
+        return await fetchAssociations({district_id: districtId}, locale).then((res) => res.data.data);
       },
     }),
     [locale, queryClient]
@@ -425,7 +369,7 @@ const MosquesPage = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      //<GlobalToast />
+      <GlobalToast />
       <DashboardHeader
         pageTitle={t("mosques")}
         backUrl={`/${locale}/dashboard`}
@@ -437,9 +381,6 @@ const MosquesPage = () => {
         searchConfig={searchConfig}
         currentFilters={{
           ...filters,
-          city_name:
-            cities?.data?.data.find((city) => city.id === filters.city_id)
-              ?.name || "",
           district_name:
             districts.find((district) => district.id === filters.district_id)
               ?.name || "",

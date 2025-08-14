@@ -9,7 +9,7 @@ import DashboardHeader from "../../../../components/dashboard/DashboardHeader";
 import DashboardTable from "../../../../components/dashboard/DashboardTable";
 import GenericModal from "../../../../components/modals/GenericModal";
 import GlobalToast from "../../../../components/GlobalToast";
-import { fetchStudents, addStudent, fetchStudentsStudyLevels, fetchStudentsParents } from "../../../../lib/api";
+import { fetchStudents, addStudent, fetchStudentsStudyLevels, fetchStudentsParents,fetchTeacherSessions } from "../../../../lib/api";
 import { usePathname } from "next/navigation";
 import { useUser } from "../../../../context/userContext";
 
@@ -35,6 +35,18 @@ const StudentsPage = () => {
     queryKey: ["studyLevels", locale],
     queryFn: () =>
       fetchStudentsStudyLevels({}, locale, user?.type).then((res) => {
+        
+        if (!res.data) {
+          throw new Error(t("error_fetching_study_levels"));
+        }
+        return res.data;
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: sessions = [], error: sessionsError } = useQuery({
+    queryKey: ["sessions", locale],
+    queryFn: () =>
+      fetchTeacherSessions({}, locale, user?.type).then((res) => {
         
         if (!res.data) {
           throw new Error(t("error_fetching_study_levels"));
@@ -73,9 +85,10 @@ const StudentsPage = () => {
   }));
 
   useEffect(() => {
-    if (studyLevelsError || parentsError || studentsError) {
+    if (studyLevelsError || sessionsError || parentsError || studentsError) {
       const errorMessage =
         studyLevelsError?.message ||
+        sessionsError?.message ||
         parentsError?.message ||
         studentsError?.message ||
         t("error_loading_students");
@@ -84,7 +97,7 @@ const StudentsPage = () => {
     } else {
       setError(null);
     }
-  }, [studyLevelsError, parentsError, studentsError, t]);
+  }, [studyLevelsError, sessionsError, parentsError, studentsError, t]);
 
   const addStudentMutation = useMutation({
     mutationFn: (studentData) => addStudent(studentData, locale),
@@ -235,6 +248,18 @@ const StudentsPage = () => {
             }))
           : [],
       },
+      {
+        name: "session_id",
+        label: "session",
+        type: "select",
+        required: true,
+        options: Array.isArray(sessions)
+          ? sessions.map((session) => ({
+              value: session.id,
+              label: session.name,
+            }))
+          : [],
+      },
     ],
     [studyLevels, parents, locale, t]
   );
@@ -258,6 +283,15 @@ const StudentsPage = () => {
           return Array.isArray(cachedData) ? cachedData : cachedData.data || [];
         }
         return await fetchStudentsParents({}, locale, user?.type).then(
+          (res) => res.data.data || []
+        );
+      },
+      session_id: async () => {
+        const cachedData = queryClient.getQueryData(["sessions", locale]);
+        if (cachedData) {
+          return Array.isArray(cachedData) ? cachedData : cachedData.data || [];
+        }
+        return await fetchTeacherSessions({}, locale, user?.type).then(
           (res) => res.data.data || []
         );
       },
@@ -323,6 +357,7 @@ const StudentsPage = () => {
           national_id: "",
           gender: "male",
           study_level_id: "",
+          session_id: "",
           parent_id: "",
         }}
         fieldsConfig={fieldsConfig}

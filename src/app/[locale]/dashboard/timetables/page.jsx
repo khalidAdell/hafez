@@ -370,7 +370,11 @@ const TimeTables = () => {
           </button>
       )}
       </div>
+      {timeTables.length > 0 ? (
       <DashboardTable columns={columns} data={timeTables} />
+      ) : (
+        <p className="text-center text-gray-500">{t("no_timetables_found")}</p>
+      )}
       <ImportTimeTablesModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}

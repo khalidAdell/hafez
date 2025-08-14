@@ -137,16 +137,18 @@ const GenericModal = ({
   const handleFileChange = (name, file, imageId, imageUrl) => {    
     setFormData((prev) => ({
       ...prev,
-      [name]: file,
+      [name]: file || imageId,
       image_id: imageId || prev.image_id || prev.upload_id || prev.icon,
       icon: name === "icon" ? imageId || prev.image_id || prev.upload_id || prev.icon : prev.icon,
       image_url: imageUrl || prev.image_url,
       image: imageId || prev.image_id,
+      // img: imageId|| prev.image,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(formData);
     for (const field of fieldsConfig) {
       if (field.required && !formData[field.name]) {
         toast.error(t(`${field.label}_required`), { autoClose: 3000 });
