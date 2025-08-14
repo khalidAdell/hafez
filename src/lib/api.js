@@ -2384,3 +2384,100 @@ export const deleteActions = async (userId, locale = "ar") => {
   }
 }
   
+
+
+
+
+export const fetchCertificateTemplates = async (params = {}, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get("/admin/certificate-templates", { params });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات قوالب الشهادات");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب قوالب الشهادات:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const addCertificateTemplate = async (templateData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post("/admin/certificate-templates", templateData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل إضافة قالب الشهادة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في إضافة قالب الشهادة:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const updateCertificateTemplate = async (id, templateData, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.post(`/admin/certificate-templates/${id}`, templateData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل تعديل قالب الشهادة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في تعديل قالب الشهادة:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const deleteCertificateTemplate = async (templateId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.delete(`/admin/certificate-templates/${templateId}`);
+    if (response.data.success) {
+      return response.data.data;
+    } else {
+      throw new Error(response.data.message || "فشل حذف قالب الشهادة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في حذف قالب الشهادة:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};
+
+export const fetchCertificateTemplateById = async (templateId, locale = "ar") => {
+  try {
+    const axiosInstance = createDashboardAxios(locale);
+    const response = await axiosInstance.get(`/admin/certificate-templates/${templateId}`);
+    if (response.data.success) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || "فشل جلب بيانات قالب الشهادة");
+    }
+  } catch (error) {
+    console.error(
+      "خطأ في جلب بيانات قالب الشهادة:",
+      error.response?.data?.message || error.message
+    );
+    throw error;
+  }
+};

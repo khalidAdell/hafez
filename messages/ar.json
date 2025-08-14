@@ -182,8 +182,8 @@
   "noAnswerTitle": "لم تجد إجابة لسؤالك؟",
   "noAnswerDescription": "تواصل معنا مباشرة وسنكون سعداء لمساعدتك",
   "contactUs": "تواصل معنا",
-  "title": "تعرف علي الأسئلة الشائعة",
-  "description": "اعرفنا من خلال الأسئلة الشائعة.",
+  "title": "العنوان",
+  "description": "الوصف",
   "knowmore": "اعرف اكثر",
   "sectionHeading": "اعرف المزيد عنا",
   "sectionText": "العشر الصغرى: برنامج الكتروني في القراءات العشر ...",
@@ -494,5 +494,16 @@
     "notes":"الملاحظات",
     "updated_at":"تاريخ التحديث",
     "enterLogin":"سجل الدخول (هوية-موبايل-البريد الالكتروني)",
-    "no_timetables_found":"لا يوجد جداول زمنية"
+    "no_timetables_found":"لا يوجد جداول زمنية",
+    "certificate_templates":"القوالب",
+    "template_deleted_successfully": "تم حذف القالب بنجاح",
+    "no_image": "لا توجد صورة",
+    "no_template_selected": "لم يتم اختيار قالب",
+    "template": "القالب",
+    "template_1": "القالب 1",
+    "template_2": "القالب 2",
+    "is_default": "الافتراضي",
+    "yes": "نعم",
+    "no": "لا",
+    "search_templates": "البحث في القوالب"
     }
